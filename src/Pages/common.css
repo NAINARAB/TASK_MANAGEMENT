@@ -43,7 +43,7 @@
 }
 
 .card {
-  box-shadow: 2px 2px 4px 0.2px rgb(211, 210, 210) !important;
+  box-shadow: 2px 2px 4px 0.2px rgb(211, 210, 210);
 }
 
 .cus-shadow {
@@ -66,6 +66,13 @@
   color: white;
   font-weight: bold;
   box-shadow: inset 2px 2px 4px 0.2 black;
+}
+
+.sIcon{
+  position: relative;
+  top: -36px;
+  left: 10px;
+  padding: 0px;
 }
 
 .smallicon {
@@ -301,6 +308,11 @@
 /* #actions::after{
   content: none !important;
 } */
+
+.smtlogo {
+  width: 150px;
+  height: 150px;
+}
 
 .comadbtn {
   border: none;

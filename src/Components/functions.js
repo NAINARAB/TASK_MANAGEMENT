@@ -1,62 +1,66 @@
 
-const LocalDate = (dateObj) => {
+export const LocalDate = (dateObj) => {
     const receivedDate = dateObj ? new Date(dateObj) : new Date();
     return receivedDate.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-const LocalDateWithTime = (dateObj) => {
+export const LocalDateWithTime = (dateObj) => {
     const receivedDate = dateObj ? new Date(dateObj) : new Date();
     return receivedDate.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-const LocalTime = (dateObj) => {
+export const LocalTime = (dateObj) => {
     const receivedDate = dateObj ? new Date(dateObj) : new Date();
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
-const getPreviousDate = (days) => {
+export const getPreviousDate = (days) => {
     const num = days ? Number(days) : 1;
     return new Date(new Date().setDate(new Date().getDate() - num)).toISOString().split('T')[0]
 }
 
-const ISOString = (dateObj) => {
+export const firstDayOfMonth = () => {
+    return new Date(new Date().getFullYear(), new Date().getMonth(), 2).toISOString().split('T')[0]
+}
+
+export const ISOString = (dateObj) => {
     const receivedDate = dateObj ? new Date(dateObj) : new Date();
     return receivedDate.toISOString().split('T')[0]
 }
 
-const isEqualNumber = (a, b) => {
+export const isEqualNumber = (a, b) => {
     return Number(a) === Number(b)
 }
 
-const isGraterNumber = (a, b) => {
+export const isGraterNumber = (a, b) => {
     return Number(a) > Number(b)
 }
 
-const isLesserNumber = (a, b) => {
+export const isLesserNumber = (a, b) => {
     return Number(a) < Number(b)
 }
 
-const NumberFormat = (num) => {
+export const NumberFormat = (num) => {
     return Number(num).toLocaleString('en-IN', { maximumFractionDigits: 2 })
 }
 
-const Addition = (a, b) => {
+export const Addition = (a, b) => {
     return Number(a) + Number(b)
 }
 
-const Subraction = (a, b) => {
+export const Subraction = (a, b) => {
     return Number(a) - Number(b)
 }
 
-const Multiplication = (a, b) => {
+export const Multiplication = (a, b) => {
     return Number(a) * Number(b)
 }
 
-const Division = (a, b) => {
+export const Division = (a, b) => {
     return Number(a) / Number(b)
 }
 
-const numberToWords = (prop) => {
+export const numberToWords = (prop) => {
     const number = Number(prop)
     const singleDigits = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
     const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
@@ -88,24 +92,6 @@ const numberToWords = (prop) => {
     }
 }
 
-function isValidObject(obj) {
+export const isValidObject = (obj) => {
     return Object.keys(obj).length !== 0;
-}
-
-export {
-    LocalDate,
-    LocalDateWithTime,
-    getPreviousDate,
-    ISOString,
-    isEqualNumber,
-    isGraterNumber,
-    isLesserNumber,
-    NumberFormat,
-    numberToWords,
-    LocalTime,
-    isValidObject,
-    Addition,
-    Subraction,
-    Multiplication,
-    Division,
 }

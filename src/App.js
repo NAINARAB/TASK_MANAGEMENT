@@ -6,6 +6,7 @@ import api from "./API";
 import CircularProgress from "@mui/material/CircularProgress";
 import MainComponent from "./Pages/MainComponent/MainComponent";
 import { ContextDataProvider } from "./Components/context/contextProvider";
+import { CompanyDataProvider } from "./Components/context/currentCompnayProvider";
 import { ToastContainer } from 'react-toastify';
 
 
@@ -45,6 +46,9 @@ import TallyReports from "./Pages/Dashboard/tallyReport";
 import ChangePassword from "./Pages/ERP/Home/changePassword";
 import AttendanceReport from "./Pages/Attendance/attendanceReport";
 import CustomerList from "./Pages/UserModule/customerList";
+import CompanyAuth from "./Pages/Authorization/compAuth";
+import StockReport from "./Pages/ERP/Report/stockReport";
+import PurchaseReport from "./Pages/ERP/Report/purchaseReport";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -118,54 +122,60 @@ function App() {
           </>
         ) : (
           <ContextDataProvider>
-            <MainComponent logout={logout}>
-              <Routes>
+            <CompanyDataProvider>
+              <MainComponent logout={logout}>
+                <Routes>
 
-                <Route exact path="/dashboard" element={<CommonDashboard />} />
+                  <Route exact path="/dashboard" element={<CommonDashboard />} />
 
-                <Route path="/masters/company" element={<CompanyInfo />} />
-                <Route path="/masters/users" element={<Users />} />
-                <Route path="/masters/branch" element={<BranchInfo />} />
-                <Route path="/masters/project" element={<ProjectList />} />
-                <Route path="/master/usertype" element={<UserType />} />
-                <Route path="/master/basegroup" element={<BaseGroup />} />
-                <Route path="/master/tasktype" element={<TaskType />} />
+                  <Route path="/masters/company" element={<CompanyInfo />} />
+                  <Route path="/masters/users" element={<Users />} />
+                  <Route path="/masters/branch" element={<BranchInfo />} />
+                  <Route path="/masters/project" element={<ProjectList />} />
+                  <Route path="/master/usertype" element={<UserType />} />
+                  <Route path="/master/basegroup" element={<BaseGroup />} />
+                  <Route path="/master/tasktype" element={<TaskType />} />
 
-                <Route path="/authorization/user" element={<UserBased />} />
-                <Route path="/authorization/usertype" element={<UserTypeBased />} />
+                  <Route path="/authorization/user" element={<UserBased />} />
+                  <Route path="/authorization/usertype" element={<UserTypeBased />} />
+                  <Route path="/authorization/company" element={<CompanyAuth />} />
 
-                <Route path="/tasks/taskslist" element={<TaskMaster />} />
-                <Route path="/tasks/activeproject" element={<ActiveProjects />} />
-                <Route path="/tasks/activeproject/projectschedule" element={<ProjectDetails />} />
-                <Route path="/tasks/activeproject/projectschedule/taskActivity" element={<TaskActivity />} />
+                  <Route path="/tasks/taskslist" element={<TaskMaster />} />
+                  <Route path="/tasks/activeproject" element={<ActiveProjects />} />
+                  <Route path="/tasks/activeproject/projectschedule" element={<ProjectDetails />} />
+                  <Route path="/tasks/activeproject/projectschedule/taskActivity" element={<TaskActivity />} />
 
-                <Route path="/discussions" element={<Discussions />} />
-                <Route path="/discussions/chats" element={<ChatsDisplayer />} />
+                  <Route path="/discussions" element={<Discussions />} />
+                  <Route path="/discussions/chats" element={<ChatsDisplayer />} />
 
-                <Route path="/mytasks/todaytasks" element={<TodayTasks />} />
-                <Route path="/mytasks/alltasks" element={<WorkDoneHistory />} />
+                  <Route path="/mytasks/todaytasks" element={<TodayTasks />} />
+                  <Route path="/mytasks/alltasks" element={<WorkDoneHistory />} />
 
-                <Route path="/reports/calendar" element={<ReportCalendar />} />
-                <Route path="/reports/taskTypeBased" element={<ReportTaskTypeBasedCalendar />} />
-                <Route path="/reports/graphs" element={<ChartsReport />} />
-                <Route path="/reprots/dayAbstract" element={<EmployeeDayAbstract />} />
-                <Route path="/reprots/employee" element={<EmployeeAbstract />} />
-                <Route path="/reports/tally" element={<TallyReports />} />
+                  <Route path="/reports/calendar" element={<ReportCalendar />} />
+                  <Route path="/reports/taskTypeBased" element={<ReportTaskTypeBasedCalendar />} />
+                  <Route path="/reports/graphs" element={<ChartsReport />} />
+                  <Route path="/reprots/dayAbstract" element={<EmployeeDayAbstract />} />
+                  <Route path="/reprots/employee" element={<EmployeeAbstract />} />
+                  <Route path="/reports/tally" element={<TallyReports />} />
 
-                <Route path="/attendance/report" element={<AttendanceReport />} />
-
-
-                <Route path="/userModule/customer" element={<CustomerList />} />
-
-
-                <Route path="/changePassword" element={<ChangePassword />} />
+                  <Route path="/attendance/report" element={<AttendanceReport />} />
 
 
-                <Route path="/invalid-credentials" element={<InvalidPageComp />} />
-                <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />
+                  <Route path="/userModule/customer" element={<CustomerList />} />
 
-              </Routes>
-            </MainComponent>
+                  <Route path='/erp/stockReport' element={<StockReport />} />
+                  <Route path='/erp/purchaseReport' element={<PurchaseReport />} />
+
+
+                  <Route path="/changePassword" element={<ChangePassword />} />
+
+
+                  <Route path="/invalid-credentials" element={<InvalidPageComp />} />
+                  <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />
+
+                </Routes>
+              </MainComponent>
+            </CompanyDataProvider>
           </ContextDataProvider>
         )}
       </BrowserRouter>

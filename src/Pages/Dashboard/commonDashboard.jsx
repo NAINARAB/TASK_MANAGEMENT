@@ -8,20 +8,24 @@ import { TbTargetArrow } from "react-icons/tb";
 import { BiTask } from "react-icons/bi";
 import PieChartComp from "./chartComp";
 import { Card, CardHeader, CardContent, Paper } from '@mui/material'
+import SOAComp from "./erp/SOA";
 
 
 
 const CommonDashboard = () => {
-    const localData = localStorage.getItem("user");
-    const parseData = JSON.parse(localData);
+    const parseData = JSON.parse(localStorage.getItem("user"));
     const [dashboardData, setDashboardData] = useState({});
     const [workedDetais, setWorkedDetais] = useState([]);
     const [myTasks, setMyTasks] = useState([]);
     const [tallyDetails, setTallyDetails] = useState([]);
     const isAdmin = Number(parseData?.UserTypeId) === 0 || Number(parseData?.UserTypeId) === 1 || Number(parseData?.UserTypeId) === 2
+    const isEmp = Number(parseData?.UserTypeId) === 6 || Number(parseData?.UserTypeId) === 3;
+    const isCustomer = Number(parseData?.UserTypeId) === 4 || Number(parseData?.UserTypeId) === 5
 
     useEffect(() => {
-        fetch(`${api}dashboardData?UserType=${parseData?.UserTypeId}&Emp_Id=${parseData?.UserId}`)
+
+        if (isAdmin || isEmp) {
+            fetch(`${api}dashboardData?UserType=${parseData?.UserTypeId}&Emp_Id=${parseData?.UserId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -30,6 +34,7 @@ const CommonDashboard = () => {
                     setDashboardData({})
                 }
             }).catch(e => console.error(e))
+
         fetch(`${api}getTallyData?UserId=${parseData?.UserId}`)
             .then(res => res.json())
             .then(data => {
@@ -39,10 +44,13 @@ const CommonDashboard = () => {
                     setTallyDetails([])
                 }
             }).catch(e => console.error(e))
-    }, [parseData?.UserId, parseData?.UserTypeId]);
+        }
+
+    }, [parseData?.UserId, parseData?.UserTypeId, isAdmin, isEmp]);
 
     useEffect(() => {
-        if (!isAdmin) {
+        if (isEmp) {
+
             fetch(`${api}myTodayWorks?Emp_Id=${parseData?.UserId}&reqDate=${new Date().toISOString().split('T')[0]}`)
                 .then(res => res.json())
                 .then(data => {
@@ -50,6 +58,7 @@ const CommonDashboard = () => {
                         setWorkedDetais(data.data)
                     }
                 }).catch(e => console.error(e))
+
             fetch(`${api}task/myTasks?Emp_Id=${parseData?.UserId}&reqDate=${new Date().toISOString().split('T')[0]}`)
                 .then(res => res.json())
                 .then(data => {
@@ -66,8 +75,7 @@ const CommonDashboard = () => {
                     }
                 }).catch(e => console.error(e))
         }
-    }, [isAdmin, parseData?.UserId])
-
+    }, [isEmp, parseData?.UserId])
 
     const CardComp = ({ title, icon, firstVal, secondVal, classCount }) => {
         return (
@@ -105,8 +113,10 @@ const CommonDashboard = () => {
 
     return (
         <>
+            {isCustomer && <SOAComp />}
+
             <div className="px-1">
-                {isAdmin ? (
+                {isAdmin && (
                     <div className="row">
 
                         <CardComp
@@ -151,33 +161,32 @@ const CommonDashboard = () => {
                             classCount={'6'} />
 
                     </div>
-                ) : (
-                    <>
-                        <div className="row">
-                            <CardComp
-                                title={'Completed Tasks'}
-                                firstVal={dashboardData?.TaskCompleted}
-                                secondVal={dashboardData?.TotalTasks}
-                                icon={<BiTask style={{ fontSize: '80px' }} />}
-                                classCount={'1'} />
-                            <CardComp
-                                title={'Today Tasks'}
-                                firstVal={dashboardData?.TodayTaskCompleted}
-                                secondVal={dashboardData?.TodayTasks}
-                                icon={<CgSandClock style={{ fontSize: '80px' }} />}
-                                classCount={'2'} />
-                            <CardComp
-                                title={'Total Work Hours'}
-                                firstVal={minFormat(dashboardData?.WorkedMinutes)}
-                                icon={<CgSandClock style={{ fontSize: '80px' }} />}
-                                classCount={'3'} />
-                        </div>
-                    </>
+                )}
+                {isEmp && (
+                    <div className="row">
+                        <CardComp
+                            title={'Completed Tasks'}
+                            firstVal={dashboardData?.TaskCompleted}
+                            secondVal={dashboardData?.TotalTasks}
+                            icon={<BiTask style={{ fontSize: '80px' }} />}
+                            classCount={'1'} />
+                        <CardComp
+                            title={'Today Tasks'}
+                            firstVal={dashboardData?.TodayTaskCompleted}
+                            secondVal={dashboardData?.TodayTasks}
+                            icon={<CgSandClock style={{ fontSize: '80px' }} />}
+                            classCount={'2'} />
+                        <CardComp
+                            title={'Total Work Hours'}
+                            firstVal={minFormat(dashboardData?.WorkedMinutes)}
+                            icon={<CgSandClock style={{ fontSize: '80px' }} />}
+                            classCount={'3'} />
+                    </div>
                 )}
             </div >
             <br />
 
-            {(!isAdmin && workedDetais.length > 0) && (
+            {(!isAdmin && isEmp && workedDetais.length > 0) && (
                 <>
                     <Card>
                         <CardContent sx={{ pb: 2 }}>
@@ -190,7 +199,7 @@ const CommonDashboard = () => {
                 </>
             )}
 
-            {(!isAdmin && myTasks.length > 0) && (
+            {(!isAdmin && isEmp && myTasks.length > 0) && (
                 <Card>
                     <CardHeader title={'Today Tasks:' + myTasks.length} sx={{ pb: 0 }} />
                     <CardContent>
@@ -235,7 +244,7 @@ const CommonDashboard = () => {
 
             <br />
 
-            {(!isAdmin && tallyDetails?.length > 0) && (
+            {(!isAdmin && isEmp && tallyDetails?.length > 0) && (
                 <Card component={Paper}>
                     <CardHeader title="Tally Entries" sx={{ pb: 0 }} />
                     <CardContent>
@@ -262,6 +271,7 @@ const CommonDashboard = () => {
                     </CardContent>
                 </Card>
             )}
+            
         </>
     )
 }

@@ -1,15 +1,15 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { IconButton, Collapse, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, Tune, Notifications, Add, BarChart, Home, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, HowToReg } from '@mui/icons-material'
+import { IconButton, Collapse, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
+import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, Tune, Add, BarChart, Home, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings } from '@mui/icons-material'
 // import { GrAnalytics } from "react-icons/gr";
 import "./MainComponent.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import api from "../../API";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { MyContext } from "../../Components/context/contextProvider";
+import { CurretntCompany } from "../../Components/context/currentCompnayProvider";
 import InvalidPageComp from "../../Components/invalidCredential";
-import Dropdown from 'react-bootstrap/Dropdown';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -73,7 +73,7 @@ const getIcon = (menuId) => {
   return matchedIcon ? matchedIcon.IconComp : null;
 }
 
-const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) => {
+const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage, setCompanySettings }) => {
   const [open, setOpen] = useState(page.Main_Menu_Id === mainBtn.Main_Menu_Id);
 
   useEffect(() => setOpen(page.Main_Menu_Id === mainBtn.Main_Menu_Id), [page, page.Main_Menu_Id, mainBtn.Main_Menu_Id])
@@ -92,6 +92,7 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
               sideClose();
               setPage(mainBtn);
               setLoclStoreage(mainBtn.Main_Menu_Id, 1)
+              setCompanySettings(false)
             }
             : () => setOpen(!open)}
       >
@@ -112,7 +113,9 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
                   nav={nav}
                   sideClose={closeSide}
                   page={page}
-                  setPage={setPage} />
+                  setPage={setPage}
+                  setCompanySettings={setCompanySettings}
+                />
                 : null
             ))}
           </Collapse>
@@ -121,7 +124,7 @@ const DispNavButtons = ({ mainBtn, subMenus, nav, sideClose, page, setPage }) =>
   )
 }
 
-const SubMenu = ({ subBtn, nav, page, sideClose, setPage }) => {
+const SubMenu = ({ subBtn, nav, page, sideClose, setPage, setCompanySettings }) => {
   return (
     <>
       <button
@@ -130,8 +133,10 @@ const SubMenu = ({ subBtn, nav, page, sideClose, setPage }) => {
           nav(subBtn?.PageUrl);
           sideClose();
           setPage(subBtn);
-          setLoclStoreage(subBtn.Sub_Menu_Id, 2)
-        }} >
+          setLoclStoreage(subBtn.Sub_Menu_Id, 2);
+          setCompanySettings(false)
+        }}
+      >
         <Circle sx={{ fontSize: '6px', color: '#FDD017', marginRight: '5px' }} />{' ' + subBtn?.SubMenuName}
       </button>
     </>
@@ -145,9 +150,14 @@ function MainComponent(props) {
   const localSessionData = localStorage.getItem("session");
   const parseSessionData = JSON.parse(localSessionData);
   const [sidebar, setSidebar] = useState({ MainMenu: [], SubMenu: [] });
+
   const { contextObj, setContextObj } = useContext(MyContext);
+  const { currentCompany, setCurrentCompany } = useContext(CurretntCompany);
+
   const [notificationData, setNotificationData] = useState([]);
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState([]);
+  const [settings, setSettings] = useState(false);
+
   const [notificationInput, setNotificationInput] = useState({
     Title: '',
     Desc_Note: '',
@@ -159,6 +169,7 @@ function MainComponent(props) {
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const [comp, setComp] = useState([]);
 
   useEffect(() => {
     fetch(`${api}appMenu?Auth=${parseData?.Autheticate_Id}`).then(res => res.json())
@@ -200,7 +211,7 @@ function MainComponent(props) {
               }
             }
           }
-          
+
           if (!navigated) {
             for (let o of data.SubMenu) {
               if (Number(o.Read_Rights) === 1 && o.PageUrl !== '' && !navigated) {
@@ -238,6 +249,26 @@ function MainComponent(props) {
 
   }, [parseData?.Autheticate_Id, parseData?.UserId])
 
+  useEffect(() => {
+    fetch(`${api}company/companysAccess?Auth=${parseData?.Autheticate_Id}`)
+      .then((res) => { return res.json() })
+      .then((data) => {
+        if (data.success) {
+          setComp(data.data);
+          if (data?.data[0] && Number(data?.data[0]?.View_Rights) === 1) {
+            setCurrentCompany({
+              ...currentCompany,
+              id: data?.data[0]?.Company_Id,
+              CompName: data?.data[0]?.Company_Name
+            })
+          }
+        } else {
+          setComp([])
+        }
+      })
+      .catch((e) => { console.log(e) })
+  }, [])
+
   const openNotificationDialog = () => {
     setNotificationInput({
       Title: '',
@@ -266,9 +297,21 @@ function MainComponent(props) {
       }).catch(e => console.error(e))
   }
 
+  const companyOnChange = (e) => {
+    const id = e.target.value;
+    const matchingCompany = comp.find(obj => Number(obj?.Company_Id) === Number(id));
+    setCurrentCompany({ ...currentCompany, id: matchingCompany?.Company_Id, CompName: matchingCompany?.Company_Name })
+  };
+
+  const changeCompanySettings = (val) => {
+    setCurrentCompany({...currentCompany, CompanySettings: val})
+  }
+
+
   return (
     <Fragment>
       <ToastContainer />
+
       <div className="fullscreen-div">
 
         {/* sidebar */}
@@ -280,13 +323,6 @@ function MainComponent(props) {
           <hr className="my-2" />
           <div className="sidebar-body-div">
 
-            {/* <button className={'sidebutton'} onClick={() => window.location.href = `${process.env.REACT_APP_ERP_ADDRESS}?Auth=${parseData?.Autheticate_Id}`}>
-              <span className="flex-grow-1 d-flex justify-content-start">
-                <Home className="me-2 fa-20" style={{ color: '#FDD017' }} />
-                {'ERP HOME'}
-              </span>
-            </button> */}
-
             {sidebar.MainMenu.map((o, i) => (
               <DispNavButtons
                 key={i}
@@ -296,7 +332,9 @@ function MainComponent(props) {
                 sideOpen={handleShow}
                 sideClose={handleClose}
                 page={contextObj}
-                setPage={setContextObj} />
+                setPage={setContextObj}
+                setCompanySettings={changeCompanySettings}
+              />
             ))}
           </div>
           <div className="sidebar-bottom">
@@ -308,6 +346,7 @@ function MainComponent(props) {
         </aside>
 
         <div className="content-div">
+
           <div className="navbar-div">
 
             <div className="fa-16 fw-bold mb-0 d-flex align-items-center" >
@@ -323,47 +362,14 @@ function MainComponent(props) {
                 <span className="text-muted fa-12">Login Time: {new Date(parseSessionData?.InTime).toDateString()}</span>
               </div>
 
-              <Dropdown>
-                <Dropdown.Toggle
-                  variant="success"
-                  id="actions"
-                  className="rounded-5 bg-transparent text-dark border-0 btn"
-                >
-                  <IconButton
-                    color="primary" size="small">
-                    <Notifications />
-                  </IconButton>
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <h5 className="px-3 border-bottom pb-2 mb-0 d-flex align-items-center">
-                    <span className="flex-grow-1">Notifications</span>
-                    <Tooltip title='Push Notification'>
-                      <IconButton size="small" onClick={openNotificationDialog}>
-                        <Add />
-                      </IconButton>
-                    </Tooltip>
-                  </h5>
 
-                  {notificationData?.map((o, i) => (
-                    <div key={i} className="border-bottom px-3 pt-2 pb-0" style={{ cursor: 'default', minWidth: '330px' }}>
-                      <p className="mb-1 fa-16 fw-bold d-flex align-items-center">
-                        <span className="flex-grow-1 pe-1">{o?.Title}</span>
-                        <span className="fa-13 text-primary">
-                          {new Date(o?.Created_AT).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </p>
-                      <p className="mb-0 fa-12 text-muted overflow-x-scroll" style={{ textAlign: 'justify' }}>
-                        {o?.Desc_Note}
-                      </p>
-                    </div>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
+              <Tooltip title="Settings">
+                <IconButton onClick={() => setSettings(true)} color="primary" size="small"><Settings /></IconButton>
+              </Tooltip>
 
               <Tooltip title="Logout">
                 <IconButton onClick={props.logout} color="primary" size="small"><Logout /></IconButton>
               </Tooltip>
-
 
             </div>
           </div>
@@ -385,9 +391,9 @@ function MainComponent(props) {
             </Breadcrumb>
             {Number(contextObj?.Read_Rights) === 1 ? props.children : <InvalidPageComp />}
           </div>
+
         </div>
       </div>
-
 
       <Offcanvas show={show} onHide={handleClose}>
         <Offcanvas.Header style={{ backgroundColor: '#333', color: 'white' }} closeButton>
@@ -411,7 +417,9 @@ function MainComponent(props) {
               sideOpen={handleShow}
               sideClose={handleClose}
               page={contextObj}
-              setPage={setContextObj} />
+              setPage={setContextObj}
+              setCompanySettings={changeCompanySettings}
+            />
           ))}
         </Offcanvas.Body>
       </Offcanvas>
@@ -471,6 +479,92 @@ function MainComponent(props) {
             <Button type='submit'>send</Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      <Dialog
+        open={settings}
+        onClose={() => setSettings(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Settings</DialogTitle>
+
+        <DialogContent>
+
+          <center>
+            <AccountCircle sx={{ fontSize: '100px' }} />
+            <br />
+            <h4>{parseData?.Name}</h4>
+          </center>
+
+          <hr />
+
+          {currentCompany?.CompanySettings === true && (
+            <div className="row mb-3">
+              <div className="col-sm-4 ">
+                <TextField
+                  fullWidth
+                  select
+                  label="Company"
+                  variant="outlined"
+                  onChange={e => companyOnChange(e)}
+                  value={Number(currentCompany?.id)}
+                  placeholder='SELECT COMPANY'
+                  InputProps={{
+                    inputProps: {
+                      style: { padding: '26px' }
+                    }
+                  }}
+                >
+                  <MenuItem value=''>SELECT COMPANY</MenuItem>
+
+                  {comp.map((obj, i) =>
+                    Number(obj?.View_Rights) === 1 && (
+                      <MenuItem key={i} value={Number(obj?.Company_Id)} >
+                        {obj?.Company_Name}
+                      </MenuItem>
+                    )
+                  )}
+
+                </TextField>
+
+              </div>
+            </div>
+          )}
+
+          <div className="card" style={{ boxShadow: 'none' }}>
+            <div className="card-body">
+              <h5 className="px-3 border-bottom pb-2 mb-0 d-flex align-items-center">
+                <span className="flex-grow-1">Notifications</span>
+                <Tooltip title='Push Notification'>
+                  <IconButton size="small" onClick={openNotificationDialog}>
+                    <Add />
+                  </IconButton>
+                </Tooltip>
+              </h5>
+
+              {notificationData?.map((o, i) => (
+                <div key={i} className="border-bottom px-3 pt-2 pb-0" style={{ cursor: 'default', minWidth: '330px' }}>
+                  <div className="mb-1 d-flex justify-content-between align-items-center">
+                    <span className="fa-16 fw-bold">{o?.Title}</span>
+                    <span className="fa-13 text-primary">
+                      {/* {LocalDateWithTime(o?.Created_AT)} */}
+                    </span>
+                  </div>
+                  <p className="mb-0 fa-12 text-muted overflow-x-scroll" style={{ textAlign: 'justify' }}>
+                    {o?.Desc_Note}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setSettings(false)}>Close</Button>
+        </DialogActions>
+
       </Dialog>
     </Fragment>
   );

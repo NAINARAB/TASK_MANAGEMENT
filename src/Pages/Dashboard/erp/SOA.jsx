@@ -1,16 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import { apihost } from "../../backendAPI";
-import { LaunchOutlined, PictureAsPdf, SaveAlt } from '@mui/icons-material'
+import api from "../../../API";
+import { LaunchOutlined } from '@mui/icons-material'
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from "@mui/material";
 import { useReactToPrint } from 'react-to-print';
 import { utils as XLSXUtils, writeFile as writeXLSX } from 'xlsx';
+import logo from '../ic_launcher.png';
 
 
 const SOAComp = () => {
+    const parseData = JSON.parse(localStorage.getItem("user"));
     const [isCustomer, setIsCustomer] = useState(false)
-    const [dataArray, setDataArray] = useState([])
-    const UserId = localStorage.getItem('UserId');
-    const token = localStorage.getItem('userToken');
+    const [dataArray, setDataArray] = useState([]);
+    const UserId = parseData?.UserId;
+    const token = parseData?.Autheticate_Id;
     const [total, setTotal] = useState(0)
     const [dialog, setDialog] = useState(false)
     const [SOA, setSOA] = useState([])
@@ -23,12 +25,12 @@ const SOAComp = () => {
         to: new Date().toISOString().split('T')[0],
     });
 
-    const imageSource = "./ic_launcher.png"
+    const imageSource = logo
     const [closingBalance, setClosingBalance] = useState({ debit: 0, credit: 0 });
     const printRef = useRef()
 
     useEffect(() => {
-        fetch(`${apihost}/api/getBalance?UserId=${UserId}`, {
+        fetch(`${api}getBalance?UserId=${UserId}`, {
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
@@ -59,7 +61,7 @@ const SOAComp = () => {
         }
         setClickedRow(rowData)
         setDialog(true)
-        fetch(`${apihost}/api/StatementOfAccound?Cust_Id=${rowData?.Cust_Id}&Acc_Id=${rowData?.tally_id}&Company_Id=${rowData?.Company_Id}&Fromdate=${selectedRange?.from}&Todate=${selectedRange?.to}`, {
+        fetch(`${api}StatementOfAccound?Cust_Id=${rowData?.Cust_Id}&Acc_Id=${rowData?.tally_id}&Company_Id=${rowData?.Company_Id}&Fromdate=${selectedRange?.from}&Todate=${selectedRange?.to}`, {
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
@@ -108,7 +110,7 @@ const SOAComp = () => {
             <div className="card">
                 <div className="card-header py-3 bg-white" >
                     <p className="mb-0 fw-bold" >
-                        <span>Balance of {localStorage.getItem('Name')}</span>
+                        <span>Balance of {parseData?.Name}</span>
                         <span className={total > 0 ? 'text-primary' : 'text-danger'}> &nbsp;( {total.toLocaleString('en-IN') + (total < 0 ? ' CR' : ' DR')} )</span>
                     </p>
                 </div>
@@ -156,7 +158,7 @@ const SOAComp = () => {
                     <Button
                         className="fw-bold"
                         onClick={handlePrint} >
-                            PDF
+                        PDF
                     </Button>
                     <Button
                         className="ms-1 fw-bold"
