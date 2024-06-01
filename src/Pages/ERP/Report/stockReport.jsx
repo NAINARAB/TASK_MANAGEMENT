@@ -97,8 +97,8 @@ const StockReport = () => {
                     </td>
                     <td className="fa-13 text-end text-primary" onClick={() => setLaks(!laks)}>
                         {laks
-                            ? (calcBalQty('Stock_Value') / 100000).toLocaleString('en-IN', { maximumFractionDigits: 2 })
-                            : calcBalQty('Stock_Value').toLocaleString('en-IN', { maximumFractionDigits: 2 })
+                            ? NumberFormat((calcBalQty('Stock_Value') / 100000))
+                            : NumberFormat(calcBalQty('Stock_Value'))
                         }
                     </td>
                     <td className="fa-13 text-end text-primary bg-light">
@@ -113,18 +113,18 @@ const StockReport = () => {
                                 <thead>
                                     <tr>
                                         {['SNo', 'INM', 'Quantity', 'Rate', 'Value (₹)'].map((o, i) => (
-                                            <th className="fa-13 border" key={i}>{o}</th>
+                                            <th className="fa-13 border text-center" key={i}>{o}</th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rows?.product_details?.map((obj, i) => (
                                         <tr key={i}>
-                                            <td className="fa-13">{i + 1}</td>
+                                            <td className="fa-13 bg-light">{i + 1}</td>
                                             <td className="fa-13">{obj.Group_Name}</td>
-                                            <td className="fa-13">{obj.Bal_Qty.toLocaleString('en-IN')}</td>
-                                            <td className="fa-13">{obj.CL_Rate.toLocaleString('en-IN')}</td>
-                                            <td className="fa-13">{obj.Stock_Value.toLocaleString('en-IN')}</td>
+                                            <td className="fa-13 text-end bg-light">{NumberFormat(obj.Bal_Qty)}</td>
+                                            <td className="fa-13 text-end">{NumberFormat(obj.CL_Rate)}</td>
+                                            <td className="fa-13 text-end fw-bold bg-light">{NumberFormat(obj.Stock_Value)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -187,8 +187,8 @@ const StockReport = () => {
                         {/* Value : */}
                         <span className="text-primary fw-bold" onClick={() => setLaks(!laks)}>
                             ₹{laks
-                                ? (overAllTotal() / 100000).toLocaleString('en-IN', { maximumFractionDigits: 2 }) + ' (L)'
-                                : overAllTotal().toLocaleString('en-IN', { maximumFractionDigits: 2 })
+                                ? NumberFormat((overAllTotal() / 100000)) + ' (L)'
+                                : NumberFormat(overAllTotal())
                             }
                         </span>
                     </h6>
