@@ -75,6 +75,13 @@
   padding: 0px;
 }
 
+.invoiceLogo {
+  width: 100%;
+  height: max-content;
+  max-width: 100px;
+  min-width: 70px;
+}
+
 .smallicon {
   width: 30px;
   height: 30px;

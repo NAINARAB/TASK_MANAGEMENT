@@ -49,6 +49,8 @@ import CustomerList from "./Pages/UserModule/customerList";
 import CompanyAuth from "./Pages/Authorization/compAuth";
 import StockReport from "./Pages/ERP/Report/stockReport";
 import PurchaseReport from "./Pages/ERP/Report/purchaseReport";
+import PurchaseReportForCustomer from "./Pages/ERP/Report/purchaseReportForCustomer";
+import PendingInvoice from "./Pages/ERP/Payments/pendingInvoice";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -165,6 +167,10 @@ function App() {
 
                   <Route path='/erp/stockReport' element={<StockReport />} />
                   <Route path='/erp/purchaseReport' element={<PurchaseReport />} />
+                  <Route path='/erp/myPruchase' element={<PurchaseReportForCustomer />} />
+
+                  
+                  <Route path='/payments/pendingInvoice' element={<PendingInvoice />} />
 
 
                   <Route path="/changePassword" element={<ChangePassword />} />
