@@ -13,6 +13,7 @@ const initialState = {
   UserTypeId: "",
   Password: "",
   BranchId: "",
+  Company_Id: '',
   UserId: "",
 };
 
@@ -32,6 +33,8 @@ const Users = () => {
 
   const [dropdown, setDropDown] = useState([]);
   const [userDropdown, setuserDropdown] = useState([]);
+  const [companyData, setCompanyData] = useState([]);
+
 
   useEffect(() => {
     fetch(`${api}users?User_Id=${parseData?.UserId}&Company_id=${parseData?.Company_id}&Branch_Id=${2}`)
@@ -62,25 +65,36 @@ const Users = () => {
         }
       })
       .catch((e) => console.log(e));
+
+    fetch(`${api}companyDropDown?User_Id=${parseData?.UserId}&Company_id=${parseData?.Company_id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setCompanyData(data.data);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   }, []);
 
   const createUser = () => {
-    const postObj = {
-      Id: inputValue.UserId,
-      UserId: inputValue.UserId,
-      Name: inputValue.Name,
-      UserName: inputValue.UserName,
-      UserTypeId: inputValue.UserTypeId,
-      Password: inputValue.Password,
-      BranchId: inputValue.BranchId,
-    };
     if (validation() === "Success") {
       fetch(`${api}users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(postObj),
+        body: JSON.stringify({
+          Id: inputValue.UserId,
+          UserId: inputValue.UserId,
+          Name: inputValue.Name,
+          UserName: inputValue.UserName,
+          UserTypeId: inputValue.UserTypeId,
+          Password: inputValue.Password,
+          BranchId: inputValue.BranchId,
+          Company_Id: inputValue.Company_Id
+        }),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -122,14 +136,7 @@ const Users = () => {
   };
 
   const clearValues = () => {
-    setInputValue({
-      Id: "",
-      Name: "",
-      UserName: "",
-      UserTypeId: "",
-      Password: "",
-      BranchId: "",
-    });
+    setInputValue(initialState);
   };
 
   const switchScreen = () => {
@@ -146,6 +153,8 @@ const Users = () => {
       UserTypeId: inputValue.UserTypeId,
       Password: inputValue.Password,
       BranchId: inputValue.BranchId,
+      Company_Id: inputValue.Company_Id
+
     };
     fetch(`${api}users`, {
       method: "PUT",
@@ -167,7 +176,6 @@ const Users = () => {
   };
 
   const editRow = (user) => {
-    console.log(user.Name);
     setEditUser(true);
     setInputValue({
       Id: user.UserId,
@@ -177,6 +185,7 @@ const Users = () => {
       UserTypeId: user.UserTypeId,
       Password: user.Password,
       BranchId: user.BranchId,
+      Company_Id: user.Company_id
     });
     setScreen(true);
   };
@@ -378,6 +387,24 @@ const Users = () => {
                   {userDropdown?.map((o, i) => (
                     <option key={i} value={o.BranchId}>
                       {o.BranchName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-lg-4 col-md-6 p-2">
+                <label>Company</label>
+                <select
+                  className="cus-inpt"
+                  value={inputValue.Company_Id}
+                  onChange={(e) =>
+                    setInputValue({ ...inputValue, Company_Id: e.target.value })
+                  }
+                >
+                  <option value={""}>select</option>
+                  {companyData?.map((o, i) => (
+                    <option key={i} value={o.ID}>
+                      {o.Name}
                     </option>
                   ))}
                 </select>

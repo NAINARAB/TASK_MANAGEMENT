@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, IconButton, Dialog, DialogTitle, DialogContent, Tooltip } from "@mui/material";
 import '../common.css'
-import api from "../../API";
 import saleapp from '../../APIsalesApp'
 import Select from "react-select";
 import { customSelectStyles } from "../../Components/tablecolumn";
@@ -61,7 +60,7 @@ const AttendanceReport = () => {
     return (
         <>
             <Card>
-                <CardContent>
+                <CardContent sx={{ minHeight: '50vh' }}>
                     <div className="ps-3 pb-2 pt-0 d-flex align-items-center justify-content-between border-bottom mb-3">
                         <h6 className="fa-18">Sales Team Report</h6>
                         {/* <span className="fw-bold ">₹ </span> */}

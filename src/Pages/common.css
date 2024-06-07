@@ -68,7 +68,7 @@
   box-shadow: inset 2px 2px 4px 0.2 black;
 }
 
-.sIcon{
+.sIcon {
   position: relative;
   top: -36px;
   left: 10px;
@@ -271,7 +271,7 @@
 }
 
 .coloredDiv2 {
-  background: linear-gradient(to top, #142dc2, #b615ff)
+  background: linear-gradient(to top, #142dc2, #b615ff);
 }
 
 .coloredDiv3 {
@@ -297,6 +297,56 @@
 .coloredDiv8 {
   background: linear-gradient(to top, #f1c40f, #f39c12);
 }
+
+.coloredDiv9 {
+  background: linear-gradient(to top, #1abc9c, #16a085);
+}
+
+.coloredDiv10 {
+  background: linear-gradient(to top, #8e44ad, #3498db);
+}
+
+.coloredDiv11 {
+  background: linear-gradient(to top, #2980b9, #2c3e50);
+}
+
+.coloredDiv12 {
+  background: linear-gradient(to top, #f39c12, #d35400);
+}
+
+.coloredDiv13 {
+  background: linear-gradient(to top, #d35400, #e74c3c);
+}
+
+.coloredDiv14 {
+  background: linear-gradient(to top, #34495e, #2c3e50);
+}
+
+.coloredDiv15 {
+  background: linear-gradient(to top, #e74c3c, #c0392b);
+}
+
+.coloredDiv16 {
+  background: linear-gradient(to top, #9b59b6, #8e44ad);
+}
+
+.coloredDiv17 {
+  background: linear-gradient(to top, #27ae60, #2980b9);
+}
+
+.coloredDiv18 {
+  background: linear-gradient(to top, #16a085, #1abc9c);
+}
+
+.coloredDiv19 {
+  background: linear-gradient(to top, #c0392b, #d35400);
+}
+
+.coloredDiv20 {
+  background: linear-gradient(to top, #f1c40f, #2ecc71);
+}
+
+
 
 .hide-toggle {
   background-image: none !important;
@@ -350,9 +400,11 @@
   .res-width {
     min-width: 450px;
   }
+
   .day-abstract-table {
     display: block !important;
   }
+
   .day-abstract-card {
     display: none !important;
   }
@@ -362,6 +414,7 @@
   .day-abstract-table {
     display: none !important;
   }
+
   .day-abstract-card {
     display: flex !important;
   }

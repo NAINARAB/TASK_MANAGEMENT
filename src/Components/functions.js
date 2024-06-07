@@ -28,6 +28,21 @@ export const ISOString = (dateObj) => {
     return receivedDate.toISOString().split('T')[0]
 }
 
+export const timeDuration = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const diff = end - start;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    const pad = num => String(num).padStart(2, '0');
+
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
 export const isEqualNumber = (a, b) => {
     return Number(a) === Number(b)
 }

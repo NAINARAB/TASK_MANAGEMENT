@@ -402,7 +402,7 @@ const PendingInvoice = () => {
                 } else {
                     setIsCustomer(false)
                 }
-            })
+            }).catch(e => console.error(e))
     }, [])
 
     useEffect(() => {

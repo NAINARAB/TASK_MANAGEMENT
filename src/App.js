@@ -51,6 +51,8 @@ import StockReport from "./Pages/ERP/Report/stockReport";
 import PurchaseReport from "./Pages/ERP/Report/purchaseReport";
 import PurchaseReportForCustomer from "./Pages/ERP/Report/purchaseReportForCustomer";
 import PendingInvoice from "./Pages/ERP/Payments/pendingInvoice";
+import PaymentReport from "./Pages/ERP/Payments/paymentReport";
+import AttendanceReportForEmployee from "./Pages/Attendance/attendanceReportForEmp";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -160,7 +162,8 @@ function App() {
                   <Route path="/reprots/employee" element={<EmployeeAbstract />} />
                   <Route path="/reports/tally" element={<TallyReports />} />
 
-                  <Route path="/attendance/report" element={<AttendanceReport />} />
+                  <Route path="/attendance/salesPersons" element={<AttendanceReport />} />
+                  <Route path="/attendance/employee" element={<AttendanceReportForEmployee />} />
 
 
                   <Route path="/userModule/customer" element={<CustomerList />} />
@@ -171,6 +174,7 @@ function App() {
 
                   
                   <Route path='/payments/pendingInvoice' element={<PendingInvoice />} />
+                  <Route path='/payments/paymentReport' element={<PaymentReport />} />
 
 
                   <Route path="/changePassword" element={<ChangePassword />} />

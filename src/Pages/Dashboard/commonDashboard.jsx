@@ -7,8 +7,10 @@ import { RxLapTimer } from "react-icons/rx";
 import { TbTargetArrow } from "react-icons/tb";
 import { BiTask } from "react-icons/bi";
 import PieChartComp from "./chartComp";
-import { Card, CardHeader, CardContent, Paper } from '@mui/material'
+import { Card, CardHeader, CardContent, Paper, FormControlLabel, Switch } from '@mui/material'
 import SOAComp from "./erp/SOA";
+import AttendanceComp from "../Attendance/attendanceComp";
+import ManagementDashboard from "./managementDashboard";
 
 
 
@@ -18,35 +20,39 @@ const CommonDashboard = () => {
     const [workedDetais, setWorkedDetais] = useState([]);
     const [myTasks, setMyTasks] = useState([]);
     const [tallyDetails, setTallyDetails] = useState([]);
-    const isAdmin = Number(parseData?.UserTypeId) === 0 || Number(parseData?.UserTypeId) === 1 || Number(parseData?.UserTypeId) === 2
+    const isAdmin = Number(parseData?.UserTypeId) === 0 || Number(parseData?.UserTypeId) === 1
+    const isMangement = Number(parseData?.UserTypeId) === 2
     const isEmp = Number(parseData?.UserTypeId) === 6 || Number(parseData?.UserTypeId) === 3;
-    const isCustomer = Number(parseData?.UserTypeId) === 4 || Number(parseData?.UserTypeId) === 5
+    const isCustomer = Number(parseData?.UserTypeId) === 4 || Number(parseData?.UserTypeId) === 5;
+    const [dispTask, setDispTask] = useState(false)
 
     useEffect(() => {
-
-        if (isAdmin || isEmp) {
+        if (isAdmin || isEmp || isMangement) {
             fetch(`${api}dashboardData?UserType=${parseData?.UserTypeId}&Emp_Id=${parseData?.UserId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setDashboardData(data.data[0]);
-                } else {
-                    setDashboardData({})
-                }
-            }).catch(e => console.error(e))
-
-        fetch(`${api}getTallyData?UserId=${parseData?.UserId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setTallyDetails(data.data);
-                } else {
-                    setTallyDetails([])
-                }
-            }).catch(e => console.error(e))
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setDashboardData(data.data[0]);
+                    } else {
+                        setDashboardData({})
+                    }
+                }).catch(e => console.error(e))
         }
+    }, [parseData?.UserId, parseData?.UserTypeId, isAdmin, isMangement, isEmp]);
 
-    }, [parseData?.UserId, parseData?.UserTypeId, isAdmin, isEmp]);
+    useEffect(() => {
+        if (isEmp) {
+            fetch(`${api}getTallyData?UserId=${parseData?.UserId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setTallyDetails(data.data);
+                    } else {
+                        setTallyDetails([])
+                    }
+                }).catch(e => console.error(e))
+        }
+    }, [isEmp])
 
     useEffect(() => {
         if (isEmp) {
@@ -80,10 +86,10 @@ const CommonDashboard = () => {
     const CardComp = ({ title, icon, firstVal, secondVal, classCount }) => {
         return (
             <>
-                <div className={`${isAdmin && 'col-xxl-3'} col-lg-4 col-md-6 col-sm-12 p-2`}>
+                <div className={`${(isAdmin || isMangement) && 'col-xxl-3'} col-lg-4 col-md-6 col-sm-12 p-2`}>
                     <div className={"coloredDiv d-flex align-items-center text-light cus-shadow coloredDiv" + classCount}>
                         <div className="flex-grow-1 p-3">
-                            <h5 >{title}</h5>
+                            <h5 className="text-uppercase">{title}</h5>
                             <h3 className="fa-16 text-end pe-3">
                                 <span style={{ fontSize: '30px' }}>{firstVal ? firstVal : 0} </span>
                                 {secondVal && '/' + secondVal}
@@ -115,51 +121,65 @@ const CommonDashboard = () => {
         <>
             {isCustomer && <SOAComp />}
 
-            <div className="px-1">
-                {isAdmin && (
-                    <div className="row">
+            {(isMangement || isAdmin) && <ManagementDashboard />}
 
+            {(isAdmin || isMangement) && (
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={dispTask}
+                            onChange={e => setDispTask(e.target.checked)}
+                        />
+                    }
+                    label="Show Task Management"
+                    className=" fw-bold text-primary"
+                />
+            )}
+
+            <div className="px-1">
+                {((isAdmin || isMangement) && dispTask) && (
+                    <div className="row">
                         <CardComp
                             title={'Projects'}
                             icon={<TbTargetArrow style={{ fontSize: '80px' }} />}
                             firstVal={dashboardData?.ActiveProjects}
                             secondVal={dashboardData?.AllProjects}
-                            classCount={'1'} />
-
+                            classCount={'1'}
+                        />
                         <CardComp
                             title={'Schedule'}
                             icon={<CiCalendarDate style={{ fontSize: '80px' }} />}
                             firstVal={dashboardData?.ActiveSchedule}
                             secondVal={dashboardData?.AllSchedule}
-                            classCount={'2'} />
-
+                            classCount={'2'}
+                        />
                         <CardComp
                             title={'Completed Tasks'}
                             icon={<BiTask style={{ fontSize: '80px' }} />}
                             firstVal={dashboardData?.TaskCompleted}
                             // secondVal={dashboardData?.TaskAssigned}
-                            classCount={'3'} />
-
+                            classCount={'3'}
+                        />
                         <CardComp
                             title={'Employee'}
                             icon={<HiUsers style={{ fontSize: '80px' }} />}
                             firstVal={dashboardData?.EmployeeCounts}
                             secondVal={Number(dashboardData?.EmployeeCounts) + dashboardData?.OtherUsers}
-                            classCount={'4'} />
-
+                            classCount={'4'}
+                        />
                         <CardComp
                             title={'Worked Hours'}
                             icon={<RxLapTimer style={{ fontSize: '80px' }} />}
                             firstVal={minFormat(dashboardData?.TotalMinutes)}
-                            classCount={'5'} />
-
+                            classCount={'5'}
+                        />
                         <CardComp
                             title={'Today Tasks'}
                             icon={<CgSandClock style={{ fontSize: '80px' }} />}
                             firstVal={dashboardData?.TodayTaskCompleted}
                             secondVal={dashboardData?.TodayTasks}
-                            classCount={'6'} />
-
+                            classCount={'6'}
+                        />
                     </div>
                 )}
                 {isEmp && (
@@ -183,10 +203,15 @@ const CommonDashboard = () => {
                             classCount={'3'} />
                     </div>
                 )}
-            </div >
+            </div>
+
             <br />
 
-            {(!isAdmin && isEmp && workedDetais.length > 0) && (
+            {isEmp && <AttendanceComp />}
+
+            <br />
+
+            {(isEmp && workedDetais.length > 0) && (
                 <>
                     <Card>
                         <CardContent sx={{ pb: 2 }}>
@@ -199,7 +224,7 @@ const CommonDashboard = () => {
                 </>
             )}
 
-            {(!isAdmin && isEmp && myTasks.length > 0) && (
+            {(isEmp && myTasks.length > 0) && (
                 <Card>
                     <CardHeader title={'Today Tasks:' + myTasks.length} sx={{ pb: 0 }} />
                     <CardContent>
@@ -244,7 +269,7 @@ const CommonDashboard = () => {
 
             <br />
 
-            {(!isAdmin && isEmp && tallyDetails?.length > 0) && (
+            {(isEmp && tallyDetails?.length > 0) && (
                 <Card component={Paper}>
                     <CardHeader title="Tally Entries" sx={{ pb: 0 }} />
                     <CardContent>
@@ -271,7 +296,7 @@ const CommonDashboard = () => {
                     </CardContent>
                 </Card>
             )}
-            
+
         </>
     )
 }

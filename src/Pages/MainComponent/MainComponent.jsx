@@ -1,7 +1,7 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { IconButton, Collapse, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
-import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, Tune, Add, BarChart, Home, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings } from '@mui/icons-material'
+import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, Tune, Add, BarChart, Home, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings, HowToReg } from '@mui/icons-material'
 // import { GrAnalytics } from "react-icons/gr";
 import "./MainComponent.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
@@ -49,7 +49,7 @@ const getIcon = (menuId) => {
     },
     {
       id: 13,
-      IconComp: <TaskAlt className="me-2 fa-20" style={{ color: '#FDD017' }} />
+      IconComp: <HowToReg className="me-2 fa-20" style={{ color: '#FDD017' }} />
     },
     {
       id: 14,
@@ -164,7 +164,7 @@ function MainComponent(props) {
     Emp_Id: parseData?.UserId,
     notificationDialog: false,
   })
-
+  // console.log(contextObj)
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
@@ -318,7 +318,7 @@ function MainComponent(props) {
 
         <aside className="fixed-fullheight-sidebar">
           <div className="sidebar-head">
-            <h4 className="my-0 ps-3">SMT Task</h4>
+            <h4 className="my-0 ps-3">ERP</h4>
           </div>
           <hr className="my-2" />
           <div className="sidebar-body-div">
