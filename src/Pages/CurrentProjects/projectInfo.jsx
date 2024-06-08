@@ -265,25 +265,6 @@ const ProjectDetails = () => {
             .finally(() => switchScheduleDeleteDialog())
     }
 
-    function getTimeDifference(time1, time2) {
-        const [hours1, minutes1] = time1.split(':').map(Number);
-        const [hours2, minutes2] = time2.split(':').map(Number);
-
-        const date1 = new Date(0, 0, 0, hours1, minutes1);
-        const date2 = new Date(0, 0, 0, hours2, minutes2);
-
-        let difference = Math.abs(date2 - date1);
-
-        const hours = Math.floor(difference / (1000 * 60 * 60));
-        difference %= (1000 * 60 * 60);
-        const minutes = Math.floor(difference / (1000 * 60));
-
-        const formattedHours = String(hours).padStart(2, '0');
-        const formattedMinutes = String(minutes).padStart(2, '0');
-
-        return `${formattedHours}:${formattedMinutes}`;
-    }
-
     const postAndPutTaskFun = () => {
         if (taskScheduleInput.Task_Id) {
             if (Number(taskScheduleInput?.Levl_Id) !== 1 && taskScheduleInput.Task_Depend_Level_Id === '') {
