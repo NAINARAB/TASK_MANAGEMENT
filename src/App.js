@@ -53,6 +53,7 @@ import PurchaseReportForCustomer from "./Pages/ERP/Report/purchaseReportForCusto
 import PendingInvoice from "./Pages/ERP/Payments/pendingInvoice";
 import PaymentReport from "./Pages/ERP/Payments/paymentReport";
 import AttendanceReportForEmployee from "./Pages/Attendance/attendanceReportForEmp";
+import EmployeeMaster from "./Pages/UserModule/employee";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -167,6 +168,7 @@ function App() {
 
 
                   <Route path="/userModule/customer" element={<CustomerList />} />
+                  <Route path="/userModule/employee" element={<EmployeeMaster />} />
 
                   <Route path='/erp/stockReport' element={<StockReport />} />
                   <Route path='/erp/purchaseReport' element={<PurchaseReport />} />
