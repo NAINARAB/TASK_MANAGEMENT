@@ -51,8 +51,16 @@ export const isGraterNumber = (a, b) => {
     return Number(a) > Number(b)
 }
 
+export const isGraterOrEqual = (a, b) => {
+    return Number(a) >= Number(b)
+}
+
 export const isLesserNumber = (a, b) => {
     return Number(a) < Number(b)
+}
+
+export const isLesserOrEqual = (a, b) => {
+    return Number(a) <= Number(b)
 }
 
 export const NumberFormat = (num) => {

@@ -54,6 +54,8 @@ import PendingInvoice from "./Pages/ERP/Payments/pendingInvoice";
 import PaymentReport from "./Pages/ERP/Payments/paymentReport";
 import AttendanceReportForEmployee from "./Pages/Attendance/attendanceReportForEmp";
 import EmployeeMaster from "./Pages/UserModule/employee";
+import ExcelDataReadTest from "./Pages/ERP/Report/excelDataRead";
+import DriverActivities from "./Pages/ERP/Report/driverActivities";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -179,7 +181,7 @@ function App() {
                   <Route path='/payments/paymentReport' element={<PaymentReport />} />
 
 
-                  <Route path="/changePassword" element={<ChangePassword />} />
+                  <Route path="/changePassword" element={<DriverActivities />} />
 
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
