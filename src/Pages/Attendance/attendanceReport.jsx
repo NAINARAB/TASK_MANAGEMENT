@@ -62,7 +62,7 @@ const AttendanceReport = () => {
             <Card>
                 <CardContent sx={{ minHeight: '50vh' }}>
                     <div className="ps-3 pb-2 pt-0 d-flex align-items-center justify-content-between border-bottom mb-3">
-                        <h6 className="fa-18">Sales Team Report</h6>
+                        <h6 className="fa-18">Sales Team Attendance</h6>
                         {/* <span className="fw-bold ">₹ </span> */}
                         <div >
                             <select

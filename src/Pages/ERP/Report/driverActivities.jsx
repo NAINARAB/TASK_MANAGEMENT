@@ -1,28 +1,22 @@
-import { Button, Card, CardContent, IconButton } from '@mui/material';
+import { Card, CardContent, IconButton, Tooltip } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { isGraterOrEqual, isLesserOrEqual, ISOString, NumberFormat } from '../../../Components/functions'
+import { isEqualObject, isGraterOrEqual, isLesserOrEqual, ISOString, NumberFormat } from '../../../Components/functions'
 import api from '../../../API';
-import { Add, Close, Edit, Save } from '@mui/icons-material'
+import { Add, Cancel, Refresh, Save } from '@mui/icons-material'
 import { toast } from 'react-toastify'
 
 
 const DriverActivities = () => {
     const [filter, setFilter] = useState({
         reqDate: ISOString(),
-        entryLocation: '',
+        entryLocation: 'MILL',
     })
     const [data, setData] = useState([]);
-    const [locations, setLocations] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [reload, setReload] = useState(false);
     const [newRow, setNewRow] = useState([]);
 
     useEffect(() => {
-        fetch(`${api}driverActivities/locations`)
-            .then(res => res.json())
-            .then(data => setLocations(data.data))
-            .catch(e => console.error(e))
-
         fetch(`${api}driverActivities/drivers`)
             .then(res => res.json())
             .then(data => setDrivers(data.data))
@@ -104,8 +98,10 @@ const DriverActivities = () => {
                 .then(data => {
                     if (data.success) {
                         toast.success(data.message);
-                        setReload(!reload)
-                        setNewRow([])
+                        if (method === 'POST') {
+                            setNewRow([]);
+                            setReload(!reload)
+                        }
                     } else {
                         toast.error(data.message)
                     }
@@ -122,7 +118,7 @@ const DriverActivities = () => {
             OtherGodownsOne, OtherGodownsTwo, OtherGodownsThree,
             TransferOne, TransferTwo, TransferThree
         } = obj;
-        const initialValue = {
+        const [initialValue, setInitialValue] = useState({
             Id,
             DriverName,
             TripOne,
@@ -136,7 +132,7 @@ const DriverActivities = () => {
             TransferOne,
             TransferTwo,
             TransferThree
-        };
+        });
         const [inputValue, setInputValue] = useState(initialValue);
 
         return (
@@ -149,6 +145,8 @@ const DriverActivities = () => {
                         <input
                             type="search"
                             className='cus-inpt border-0'
+                            style={{ minWidth: '200px' }}
+                            list='driverList'
                             value={inputValue?.DriverName}
                             onChange={e => setInputValue(pre => ({ ...pre, DriverName: e.target.value }))}
                         />
@@ -170,10 +168,30 @@ const DriverActivities = () => {
                     <td className='border fw-bold fa-13'>
                         {calculateRowSum(obj)}
                     </td>
-                    <td className='border'>
-                        <IconButton color='success' size='small' onClick={() => saveActivity(inputValue, 'PUT')}>
-                            <Save />
-                        </IconButton>
+                    <td className='border pb-0' style={{ minWidth: '80px'}}>
+
+                        <Tooltip title='SAVE'>
+                            <IconButton
+                                color={'success'}
+                                size='small'
+                                disabled={isEqualObject(initialValue, inputValue)}
+                                onClick={() => { saveActivity(inputValue, 'PUT'); setInitialValue(inputValue) }}
+                            >
+                                <Save className='fa-20' />
+                            </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title='CANCEL EDITING'>
+                            <IconButton 
+                                size='small' 
+                                onClick={() => setInputValue(initialValue)}
+                                color='error'
+                                disabled={isEqualObject(initialValue, inputValue)}
+                            >
+                                    <Cancel className='fa-20' />
+                            </IconButton>
+                        </Tooltip>
+
                     </td>
                 </tr>
             </>
@@ -200,13 +218,14 @@ const DriverActivities = () => {
                         </div>
                         <div>
                             <label className='mb-2 w-100'>LOCATION</label>
-                            <input
-                                type='search'
-                                list='locationList'
+                            <select
                                 className='cus-inpt w-auto'
                                 value={filter.entryLocation}
                                 onChange={e => setFilter(pre => ({ ...pre, entryLocation: e.target.value }))}
-                            />
+                            >
+                                <option value="MILL">MILL</option>
+                                <option value="GODOWN">GODOWN</option>
+                            </select>
                         </div>
                     </div>
 
@@ -220,14 +239,24 @@ const DriverActivities = () => {
                                     <th colSpan={3} className={'fa-14 border text-center'}>OTHER GODOWNS</th>
                                     <th colSpan={3} className={'fa-14 border text-center bg-light'}>TRANSFER</th>
                                     <th className='border text-end' colSpan={2}>
-                                        <Button
-                                            startIcon={<Add style={{ fontSize: '18px' }} />}
-                                            onClick={insertColumns}
-                                            variant='contained'
-                                            className='fa-11'
-                                        >
-                                            New Row
-                                        </Button>
+                                        <Tooltip title='ADD NEW DRIVER'>
+                                            <IconButton
+                                                onClick={insertColumns}
+                                                disabled={newRow.length > 0}
+                                                color='info'
+                                                size='small'
+                                            >
+                                                <Add className='fa-20' />
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip title='REFRESH'>
+                                            <IconButton
+                                                onClick={() => setReload(!reload)}
+                                                color='info'
+                                            >
+                                                <Refresh className='fa-20' />
+                                            </IconButton>
+                                        </Tooltip>
                                     </th>
                                 </tr>
                                 <tr>
@@ -276,7 +305,7 @@ const DriverActivities = () => {
                                         <td className='border'>{NumberFormat(calculateRowSum(o))}</td>
                                         <td className='border p-0'>
                                             <IconButton color='success' size='small' onClick={() => saveActivity(o, 'POST')}>
-                                                <Save />
+                                                <Save className='fa-20' />
                                             </IconButton>
                                         </td>
                                     </tr>
@@ -285,13 +314,13 @@ const DriverActivities = () => {
                                 {data.length > 0 && (
                                     <tr>
                                         <td className={'border fw-bold text-end'} colSpan={2}></td>
-                                        <th colSpan={5} className={'fa-14 border text-center bg-light'}>
+                                        <th colSpan={5} className={'fa-14 border text-center'}>
                                             {calTotal(5, 9)}
                                         </th>
                                         <th colSpan={3} className={'fa-14 border text-center'}>
                                             {calTotal(10, 12)}
                                         </th>
-                                        <th colSpan={3} className={'fa-14 border text-center bg-light'}>
+                                        <th colSpan={3} className={'fa-14 border text-center'}>
                                             {calTotal(13, 15)}
                                         </th>
                                         <th className={'fa-16 border text-center '} colSpan={2}>
@@ -305,10 +334,6 @@ const DriverActivities = () => {
                     </div>
                 </CardContent>
             </Card>
-
-            <datalist id='locationList'>
-                {locations.map((o, i) => <option key={i} value={o.LocationDetails} />)}
-            </datalist>
 
             <datalist id='driverList'>
                 {drivers.map((o, i) => <option key={i} value={o.DriverName} />)}

@@ -171,6 +171,7 @@ function App() {
 
                   <Route path="/userModule/customer" element={<CustomerList />} />
                   <Route path="/userModule/employee" element={<EmployeeMaster />} />
+                  <Route path="/userModule/drivers" element={<DriverActivities />} />
 
                   <Route path='/erp/stockReport' element={<StockReport />} />
                   <Route path='/erp/purchaseReport' element={<PurchaseReport />} />
@@ -181,7 +182,7 @@ function App() {
                   <Route path='/payments/paymentReport' element={<PaymentReport />} />
 
 
-                  <Route path="/changePassword" element={<DriverActivities />} />
+                  <Route path="/changePassword" element={<ChangePassword />} />
 
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
