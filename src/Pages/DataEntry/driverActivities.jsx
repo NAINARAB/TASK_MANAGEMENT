@@ -1,7 +1,7 @@
 import { Card, CardContent, IconButton, Tooltip } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { isEqualObject, isGraterOrEqual, isLesserOrEqual, ISOString, NumberFormat } from '../../../Components/functions'
-import api from '../../../API';
+import { isEqualObject, isGraterOrEqual, isLesserOrEqual, ISOString, NumberFormat } from '../../Components/functions'
+import api from '../../API';
 import { Add, Cancel, Refresh, Save } from '@mui/icons-material'
 import { toast } from 'react-toastify'
 
@@ -15,6 +15,7 @@ const DriverActivities = () => {
     const [drivers, setDrivers] = useState([]);
     const [reload, setReload] = useState(false);
     const [newRow, setNewRow] = useState([]);
+    const splitCell = { display: 'flex', justifyContent: 'space-between'}
 
     useEffect(() => {
         fetch(`${api}driverActivities/drivers`)
@@ -52,6 +53,17 @@ const DriverActivities = () => {
             TransferOne: '',
             TransferTwo: '',
             TransferThree: '',
+            TripOneTime: '00:00',
+            TripTwoTime: '00:00',
+            TripThreeTime: '00:00',
+            TripFourTime: '00:00',
+            TripFiveTime: '00:00',
+            OtherGodownsOneTime: '00:00',
+            OtherGodownsTwoTime: '00:00',
+            OtherGodownsThreeTime: '00:00',
+            TransferOneTime: '00:00',
+            TransferTwoTime: '00:00',
+            TransferThreeTime: '00:00',
         }
         setNewRow(pre => [...pre, columns]);
     }
@@ -168,28 +180,32 @@ const DriverActivities = () => {
                     <td className='border fw-bold fa-13'>
                         {calculateRowSum(obj)}
                     </td>
-                    <td className='border pb-0' style={{ minWidth: '80px'}}>
+                    <td className='border pb-0' style={{ minWidth: '80px' }}>
 
                         <Tooltip title='SAVE'>
-                            <IconButton
-                                color={'success'}
-                                size='small'
-                                disabled={isEqualObject(initialValue, inputValue)}
-                                onClick={() => { saveActivity(inputValue, 'PUT'); setInitialValue(inputValue) }}
-                            >
-                                <Save className='fa-20' />
-                            </IconButton>
+                            <span>
+                                <IconButton
+                                    color={'success'}
+                                    size='small'
+                                    disabled={isEqualObject(initialValue, inputValue)}
+                                    onClick={() => { saveActivity(inputValue, 'PUT'); setInitialValue(inputValue) }}
+                                >
+                                    <Save className='fa-20' />
+                                </IconButton>
+                            </span>
                         </Tooltip>
 
                         <Tooltip title='CANCEL EDITING'>
-                            <IconButton 
-                                size='small' 
-                                onClick={() => setInputValue(initialValue)}
-                                color='error'
-                                disabled={isEqualObject(initialValue, inputValue)}
-                            >
+                            <span>
+                                <IconButton
+                                    size='small'
+                                    onClick={() => setInputValue(initialValue)}
+                                    color='error'
+                                    disabled={isEqualObject(initialValue, inputValue)}
+                                >
                                     <Cancel className='fa-20' />
-                            </IconButton>
+                                </IconButton>
+                            </span>
                         </Tooltip>
 
                     </td>
@@ -240,14 +256,16 @@ const DriverActivities = () => {
                                     <th colSpan={3} className={'fa-14 border text-center bg-light'}>TRANSFER</th>
                                     <th className='border text-end' colSpan={2}>
                                         <Tooltip title='ADD NEW DRIVER'>
-                                            <IconButton
-                                                onClick={insertColumns}
-                                                disabled={newRow.length > 0}
-                                                color='info'
-                                                size='small'
-                                            >
-                                                <Add className='fa-20' />
-                                            </IconButton>
+                                            <span>
+                                                <IconButton
+                                                    onClick={insertColumns}
+                                                    disabled={newRow.length > 0}
+                                                    color='info'
+                                                    size='small'
+                                                >
+                                                    <Add className='fa-20' />
+                                                </IconButton>
+                                            </span>
                                         </Tooltip>
                                         <Tooltip title='REFRESH'>
                                             <IconButton
@@ -287,6 +305,12 @@ const DriverActivities = () => {
                                                 value={o?.DriverName}
                                                 onChange={e => handleInputChange(i, 'DriverName', e.target.value)}
                                             />
+                                            <input
+                                                type="time"
+                                                className='cus-inpt border-0'
+                                                // value={o?.DriverName}
+                                                onChange={e => handleInputChange(i, 'DriverName', e.target.value)}
+                                            />
                                         </td>
                                         {[
                                             'TripOne', 'TripTwo', 'TripThree', 'TripFour', 'TripFive',
@@ -294,12 +318,26 @@ const DriverActivities = () => {
                                             'TransferOne', 'TransferTwo', 'TransferThree'
                                         ].map((oo, ii) => (
                                             <td key={ii} className={'fa-14 border text-center p-0'}>
-                                                <input
-                                                    onInput={onlynum}
-                                                    className='cus-inpt border-0'
-                                                    value={o[oo]}
-                                                    onChange={e => handleInputChange(i, oo, e.target.value)}
-                                                />
+                                                <div style={splitCell}>
+                                                <span>
+                                                    <input
+                                                        onInput={onlynum}
+                                                        className='cus-inpt border-0'
+                                                        style={{ minWidth: '70px'}}
+                                                        value={o[oo]}
+                                                        onChange={e => handleInputChange(i, oo, e.target.value)}
+                                                    />
+                                                </span>
+                                                <span className='pe-2'></span>
+                                                <span>
+                                                    <input
+                                                        className='cus-inpt border-0'
+                                                        type='time'
+                                                        value={o[oo + 'Time']}
+                                                        onChange={e => handleInputChange(i, (oo + 'Time'), e.target.value)}
+                                                    />
+                                                </span>
+                                                </div>
                                             </td>
                                         ))}
                                         <td className='border'>{NumberFormat(calculateRowSum(o))}</td>

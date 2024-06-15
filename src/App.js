@@ -54,8 +54,7 @@ import PendingInvoice from "./Pages/ERP/Payments/pendingInvoice";
 import PaymentReport from "./Pages/ERP/Payments/paymentReport";
 import AttendanceReportForEmployee from "./Pages/Attendance/attendanceReportForEmp";
 import EmployeeMaster from "./Pages/UserModule/employee";
-import ExcelDataReadTest from "./Pages/ERP/Report/excelDataRead";
-import DriverActivities from "./Pages/ERP/Report/driverActivities";
+import DriverActivities from "./Pages/DataEntry/newDriverActivities";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -171,7 +170,7 @@ function App() {
 
                   <Route path="/userModule/customer" element={<CustomerList />} />
                   <Route path="/userModule/employee" element={<EmployeeMaster />} />
-                  <Route path="/userModule/drivers" element={<DriverActivities />} />
+
 
                   <Route path='/erp/stockReport' element={<StockReport />} />
                   <Route path='/erp/purchaseReport' element={<PurchaseReport />} />
@@ -184,6 +183,7 @@ function App() {
 
                   <Route path="/changePassword" element={<ChangePassword />} />
 
+                  <Route path="/dataEntry/drivers" element={<DriverActivities />} />
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
                   <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />

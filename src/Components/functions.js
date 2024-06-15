@@ -14,6 +14,18 @@ export const LocalTime = (dateObj) => {
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
+export const convertToTimeObject = (timeString) => {
+    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    date.setSeconds(seconds);
+    date.setMilliseconds(0);
+
+    return LocalTime(date);
+}
+
 export const getPreviousDate = (days) => {
     const num = days ? Number(days) : 1;
     return new Date(new Date().setDate(new Date().getDate() - num)).toISOString().split('T')[0]
@@ -41,6 +53,12 @@ export const timeDuration = (startDate, endDate) => {
     const pad = num => String(num).padStart(2, '0');
 
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+export const onlynum = (e) => {
+    const value = e.target.value;
+    const newValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+    e.target.value = newValue;
 }
 
 export const isEqualNumber = (a, b) => {
@@ -139,6 +157,15 @@ export const numberToWords = (prop) => {
     } else {
         return 'Number is too large';
     }
+}
+
+export const createAbbreviation = (sentence) => {
+    return sentence
+        .split(' ')
+        .map(word => word[0])
+        .filter(char => /[a-zA-Z]/.test(char))
+        .join('')
+        .toUpperCase();
 }
 
 export const isValidObject = (obj) => {
