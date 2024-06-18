@@ -1,8 +1,9 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { IconButton, Collapse, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
-import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, Tune, Add, BarChart, Home, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings, HowToReg, Keyboard } from '@mui/icons-material'
-// import { GrAnalytics } from "react-icons/gr";
+import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, 
+  Tune, Add, BarChart, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings, HowToReg, Keyboard 
+} from '@mui/icons-material'
 import "./MainComponent.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
 import api from "../../API";
@@ -149,10 +150,8 @@ const SubMenu = ({ subBtn, nav, page, sideClose, setPage, setCompanySettings }) 
 
 function MainComponent(props) {
   const nav = useNavigate();
-  const localData = localStorage.getItem("user");
-  const parseData = JSON.parse(localData);
-  const localSessionData = localStorage.getItem("session");
-  const parseSessionData = JSON.parse(localSessionData);
+  const parseData = JSON.parse(localStorage.getItem("user"));
+  const parseSessionData = JSON.parse(localStorage.getItem("session"));
   const [sidebar, setSidebar] = useState({ MainMenu: [], SubMenu: [] });
 
   const { contextObj, setContextObj } = useContext(MyContext);
@@ -168,12 +167,11 @@ function MainComponent(props) {
     Emp_Id: parseData?.UserId,
     notificationDialog: false,
   })
-  // console.log(contextObj)
   const [show, setShow] = useState(false);
+  const [comp, setComp] = useState([]);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const [comp, setComp] = useState([]);
 
   useEffect(() => {
     fetch(`${api}appMenu?Auth=${parseData?.Autheticate_Id}`).then(res => res.json())
@@ -308,7 +306,7 @@ function MainComponent(props) {
   };
 
   const changeCompanySettings = (val) => {
-    setCurrentCompany({...currentCompany, CompanySettings: val})
+    setCurrentCompany({ ...currentCompany, CompanySettings: val })
   }
 
 
@@ -404,13 +402,6 @@ function MainComponent(props) {
           <Offcanvas.Title >Menu</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body style={{ backgroundColor: '#333' }}>
-
-          <button className={'sidebutton'} onClick={() => window.location.href = `${process.env.REACT_APP_ERP_ADDRESS}?Auth=${parseData?.Autheticate_Id}`}>
-            <span className="flex-grow-1 d-flex justify-content-start">
-              <Home className="me-2 fa-20" style={{ color: '#FDD017' }} />
-              {'ERP HOME'}
-            </span>
-          </button>
 
           {sidebar.MainMenu.map((o, i) => (
             <DispNavButtons

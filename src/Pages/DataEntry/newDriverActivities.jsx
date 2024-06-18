@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { convertToTimeObject, createAbbreviation, ISOString, onlynum } from '../../Components/functions';
+import React, { useEffect, useState, useContext } from 'react';
+import { convertToTimeObject, createAbbreviation, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
 import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import { AccessTime, Edit } from '@mui/icons-material';
+import { Edit } from '@mui/icons-material';
+import { MyContext } from '../../Components/context/contextProvider';
 
 
 const DriverActivities = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
-    const splitCell = { display: 'flex', justifyContent: 'space-between' }
+    const { contextObj } = useContext(MyContext);
+
     const initialValue = {
         Id: '',
         ActivityDate: ISOString(),
@@ -16,6 +18,7 @@ const DriverActivities = () => {
         DriverName: '',
         TripCategory: 'LRY SHED & LOCAL',
         TonnageValue: '',
+        TripNumber: 1,
         EventTime: '12:00',
         CreatedBy: storage.UserId,
     }
@@ -74,8 +77,8 @@ const DriverActivities = () => {
 
     const DriverDispComp = ({ obj }) => {
 
-        const totalTonnage = obj?.LocationGroup.reduce((total, group) => {
-            const groupTonnage = group.TripDetails.reduce((sum, trip) => sum + (trip.TonnageValue || 0), 0);
+        const rowTotal = obj?.LocationGroup?.reduce((total, group) => {
+            const groupTonnage = group?.TripDetails?.reduce((sum, trip) => sum + (trip?.TonnageValue || 0), 0);
             return total + groupTonnage;
         }, 0);
 
@@ -83,46 +86,49 @@ const DriverActivities = () => {
             <tr>
                 <td
                     style={{ verticalAlign: 'middle' }}
-                    className='fa-14 fw-bold text-primary border rounded-4 text-center'
+                    className='fa-13 fw-bold text-primary border rounded-4 text-center'
                 >
                     {obj.DriverName}
                 </td>
                 {obj?.LocationGroup?.map((o, i) => (
                     <td key={i} className='border rounded-4 p-0' >
 
-                        {/* <p className='border-bottom fw-bold fa-13 mb-0 text-center p-2'>{o?.TripCategory}</p> */}
-
                         <div className="table-responsive">
+
                             <table className="table mb-0">
-                                <thead>
+                                <tbody>
                                     <tr>
                                         {o?.TripDetails?.map((to, ti) => (
-                                            <th className='fa-14 border-bottom border-end p-0' key={ti}>
-                                                <div className='d-flex justify-content-between align-items-center p-1'>
-                                                    <span>{createAbbreviation(o?.TripCategory)} - {ti + 1}</span>
-                                                    <IconButton
-                                                        size='small'
-                                                        onClick={() => {
-                                                            setInputValues(to);
-                                                            setFilter(pre => ({ ...pre, dialog: true }))
-                                                        }}
-                                                    >
-                                                        <Edit className='fa-16' />
-                                                    </IconButton>
+                                            <td key={ti} className='border-0 border-end fw-bold p-0'>
+                                                <div className='d-flex justify-content-between fa-14 border-bottom p-1'>
+
+                                                    <span className='px-1 text-muted'>{createAbbreviation(o?.TripCategory)}-{to.TripNumber}</span>
+
+                                                    {isEqualNumber(contextObj?.Edit_Rights, 1) && (
+                                                        <IconButton
+                                                            size='small'
+                                                            onClick={() => {
+                                                                setInputValues(to);
+                                                                setFilter(pre => ({ ...pre, dialog: true }))
+                                                            }}
+                                                        >
+                                                            <Edit className='fa-16' />
+                                                        </IconButton>
+                                                    )}
                                                 </div>
-                                            </th>
+
+                                                <div className="d-flex justify-content-between p-1">
+
+                                                    <span className='text-primary px-2'>{to?.TonnageValue}</span>
+
+                                                    <span className='fa-13 text-muted'>
+                                                        {convertToTimeObject(to?.EventTime)}
+                                                    </span>
+                                                </div>
+
+                                            </td>
                                         ))}
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {o?.TripDetails?.map((to, ti) => (
-                                        <td className='border p-0' key={ti}>
-                                            <div style={splitCell}>
-                                                <p className='p-1 py-0 mb-0 fw-bold border-end text-primary w-100'>{to?.TonnageValue}</p>
-                                                <p className='p-1 py-0 mb-0 w-100'><AccessTime className='fa-14' />{convertToTimeObject(to?.EventTime)}</p>
-                                            </div>
-                                        </td>
-                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -130,7 +136,7 @@ const DriverActivities = () => {
                     </td>
                 ))}
                 <td className='border' style={{ verticalAlign: 'middle' }}>
-                    <h6 className=' my-auto text-center'>{totalTonnage}</h6>
+                    <h6 className=' my-auto text-center'>{NumberFormat(rowTotal)}</h6>
                 </td>
             </tr>
         )
@@ -164,7 +170,9 @@ const DriverActivities = () => {
             <Card>
                 <div className="p-3 fa-16 fw-bold border-bottom d-flex justify-content-between">
                     <span>Driver Activities</span>
-                    <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
+                    {isEqualNumber(contextObj?.Add_Rights, 1) && (
+                        <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
+                    )}
                 </div>
 
                 <div className="d-flex p-2 px-3">
@@ -207,9 +215,11 @@ const DriverActivities = () => {
                                 <tr>
                                     <td className='border'></td>
                                     {activityData[0] && activityData[0]?.LocationGroup?.map((o, i) => (
-                                        <td className='fa-13 border text-center fw-bold' key={i}>{categoryTotals[o.TripCategory]}</td>
+                                        <td className='fa-13 border text-center fw-bold' key={i}>
+                                            {categoryTotals[o.TripCategory] ? NumberFormat(categoryTotals[o.TripCategory]) : '-'}
+                                        </td>
                                     ))}
-                                    <td className='fa-14 fw-bold border text-primary text-center'>{totalTonnageValue}</td>
+                                    <td className='fa-14 fw-bold border text-primary text-center'>{NumberFormat(totalTonnageValue)}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -234,7 +244,7 @@ const DriverActivities = () => {
                                     <td className='border-0' >
                                         <input
                                             type="date"
-                                            value={inputValues.ActivityDate}
+                                            value={inputValues?.ActivityDate}
                                             className='cus-inpt'
                                             onChange={e => setInputValues(pre => ({ ...pre, ActivityDate: e.target.value }))}
                                         />
@@ -244,7 +254,7 @@ const DriverActivities = () => {
                                     <td className='border-0' style={{ verticalAlign: 'middle' }}>Location</td>
                                     <td className='border-0' >
                                         <select
-                                            value={inputValues.LocationDetails}
+                                            value={inputValues?.LocationDetails}
                                             onChange={e => setInputValues(pre => ({ ...pre, LocationDetails: e.target.value }))}
                                             className='cus-inpt'
                                         >
@@ -257,7 +267,7 @@ const DriverActivities = () => {
                                     <td className='border-0' style={{ verticalAlign: 'middle' }}>TYPE</td>
                                     <td className='border-0' >
                                         <select
-                                            value={inputValues.TripCategory}
+                                            value={inputValues?.TripCategory}
                                             onChange={e => setInputValues(pre => ({ ...pre, TripCategory: e.target.value }))}
                                             className='cus-inpt'
                                         >
@@ -271,11 +281,24 @@ const DriverActivities = () => {
                                     <td className='border-0' style={{ verticalAlign: 'middle' }}>Driver Name</td>
                                     <td className='border-0' >
                                         <input
-                                            value={inputValues.DriverName}
+                                            value={inputValues?.DriverName}
                                             type='search'
                                             list='driverList'
                                             className='cus-inpt'
+                                            placeholder='Type or Search Driver name'
                                             onChange={e => setInputValues(pre => ({ ...pre, DriverName: e.target.value }))}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Trip Number</td>
+                                    <td className='border-0' >
+                                        <input
+                                            value={inputValues?.TripNumber}
+                                            className='cus-inpt'
+                                            onInput={onlynum}
+                                            placeholder='Trip Count Number'
+                                            onChange={e => setInputValues(pre => ({ ...pre, TripNumber: e.target.value }))}
                                         />
                                     </td>
                                 </tr>
@@ -283,9 +306,9 @@ const DriverActivities = () => {
                                     <td className='border-0' style={{ verticalAlign: 'middle' }}>Tonnage Value</td>
                                     <td className='border-0' >
                                         <input
-                                            onInput={onlynum}
-                                            value={inputValues.TonnageValue}
+                                            value={inputValues?.TonnageValue}
                                             className='cus-inpt'
+                                            onInput={onlynum}
                                             onChange={e => setInputValues(pre => ({ ...pre, TonnageValue: e.target.value }))}
                                         />
                                     </td>
@@ -295,7 +318,7 @@ const DriverActivities = () => {
                                     <td className='border-0' >
                                         <input
                                             type='time'
-                                            value={inputValues.EventTime}
+                                            value={inputValues?.EventTime}
                                             className='cus-inpt'
                                             onChange={e => setInputValues(pre => ({ ...pre, EventTime: e.target.value }))}
                                         />

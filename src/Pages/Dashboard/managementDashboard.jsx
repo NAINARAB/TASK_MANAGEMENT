@@ -88,7 +88,7 @@ const ManagementDashboard = () => {
             .then(data => {
                 if (data.success) {
                     setComp(data.data);
-                    if (data?.data[0] && Number(data?.data[0]?.View_Rights) === 1) {
+                    if ((!currentCompany?.id && !currentCompany?.CompName) && (data?.data[0] && Number(data?.data[0]?.View_Rights) === 1)) {
                         setCurrentCompany(pre => ({
                             ...pre,
                             id: data?.data[0]?.Company_Id,
@@ -116,8 +116,6 @@ const ManagementDashboard = () => {
                 .catch(e => console.error(e))
         }
     }, [UserAccess, currentCompany.id, filter.date])
-
-
 
     const companyOnChange = (e) => {
         const id = e.target.value;
