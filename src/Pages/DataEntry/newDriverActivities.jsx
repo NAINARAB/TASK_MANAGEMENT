@@ -2,8 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { convertToTimeObject, createAbbreviation, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
-import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import { Edit } from '@mui/icons-material';
+import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { MyContext } from '../../Components/context/contextProvider';
 
 
@@ -77,8 +76,11 @@ const DriverActivities = () => {
 
     const DriverDispComp = ({ obj }) => {
 
-        const rowTotal = obj?.LocationGroup?.reduce((total, group) => {
-            const groupTonnage = group?.TripDetails?.reduce((sum, trip) => sum + (trip?.TonnageValue || 0), 0);
+        const newRowTotal = obj?.LocationGroup?.reduce((total, group) => {
+            const groupTonnage = group?.TripDetails?.reduce((grpSum, trip) => {
+                const tripTotal = trip?.Trips?.reduce((sum, trip) => sum + (trip?.TonnageValue || 0), 0);
+                return tripTotal + grpSum;
+            }, 0);
             return total + groupTonnage;
         }, 0);
 
@@ -90,53 +92,31 @@ const DriverActivities = () => {
                 >
                     {obj.DriverName}
                 </td>
-                {obj?.LocationGroup?.map((o, i) => (
-                    <td key={i} className='border rounded-4 p-0' >
+                {obj?.LocationGroup?.map(o => o?.TripDetails?.map((oo, ii) => (
+                    <td key={ii} className='border rounded-4 p-0' >
 
-                        <div className="table-responsive">
-
-                            <table className="table mb-0">
-                                <tbody>
-                                    <tr>
-                                        {o?.TripDetails?.map((to, ti) => (
-                                            <td key={ti} className='border-0 border-end fw-bold p-0'>
-                                                <div className='d-flex justify-content-between fa-14 border-bottom p-1'>
-
-                                                    <span className='px-1 text-muted'>{createAbbreviation(o?.TripCategory)}-{to.TripNumber}</span>
-
-                                                    {isEqualNumber(contextObj?.Edit_Rights, 1) && (
-                                                        <IconButton
-                                                            size='small'
-                                                            onClick={() => {
-                                                                setInputValues(to);
-                                                                setFilter(pre => ({ ...pre, dialog: true }))
-                                                            }}
-                                                        >
-                                                            <Edit className='fa-16' />
-                                                        </IconButton>
-                                                    )}
-                                                </div>
-
-                                                <div className="d-flex justify-content-between p-1">
-
-                                                    <span className='text-primary px-2'>{to?.TonnageValue}</span>
-
-                                                    <span className='fa-13 text-muted'>
-                                                        {convertToTimeObject(to?.EventTime)}
-                                                    </span>
-                                                </div>
-
-                                            </td>
-                                        ))}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        {oo?.Trips.map((ooo, iii) => (
+                            <div
+                                className='d-flex justify-content-between p-1 cellHover'
+                                key={iii}
+                                onClick={
+                                    isEqualNumber(contextObj?.Edit_Rights, 1)
+                                        ? () => {
+                                            setInputValues(ooo);
+                                            setFilter(pre => ({ ...pre, dialog: true }))
+                                        }
+                                        : () => { }
+                                }
+                            >
+                                <span className='p-1 fa-14 fw-bold text-primary'>{NumberFormat(ooo?.TonnageValue)}</span>
+                                <span className='p-1 fa-13'>{ooo?.EventTime ? convertToTimeObject(ooo?.EventTime) : '-'}</span>
+                            </div>
+                        ))}
 
                     </td>
-                ))}
+                )))}
                 <td className='border' style={{ verticalAlign: 'middle' }}>
-                    <h6 className=' my-auto text-center'>{NumberFormat(rowTotal)}</h6>
+                    <h6 className=' my-auto text-center'>{NumberFormat(newRowTotal)}</h6>
                 </td>
             </tr>
         )
@@ -151,7 +131,7 @@ const DriverActivities = () => {
                     categoryTotals[group.TripCategory] = 0;
                 }
                 group.TripDetails.forEach(detail => {
-                    categoryTotals[group.TripCategory] += detail.TonnageValue;
+                    categoryTotals[group.TripCategory] += detail?.Trips?.reduce((sum, obj) => sum + (obj?.TonnageValue || 0), 0);
                 });
             });
         });
@@ -201,26 +181,44 @@ const DriverActivities = () => {
                 <CardContent >
                     <div className="table-responsive">
                         <table className='table'>
+
                             <thead>
                                 <tr>
                                     <th className='fa-14 border'>Driver Name</th>
                                     {activityData[0] && activityData[0]?.LocationGroup?.map((o, i) => (
-                                        <th className='fa-14 border' key={i}>{o?.TripCategory}</th>
+                                        <th className='fa-14 border text-center' key={i} colSpan={o?.TripDetails?.length}>{o?.TripCategory}</th>
                                     ))}
-                                    <th className='fa-14 border'>Total</th>
+                                    <th className='border'></th>
+                                </tr>
+                                <tr>
+                                    <th className='border'></th>
+                                    {activityData[0] && activityData[0]?.LocationGroup?.map(o => o?.TripDetails?.map((oo, ii) => (
+                                        <th className='fa-14 border text-center' key={ii}>
+                                            {createAbbreviation(o?.TripCategory)}-{oo.TripNumber}
+                                        </th>
+                                    )))}
+                                    <th className='fa-14 border text-center'>Total</th>
                                 </tr>
                             </thead>
+
                             <tbody>
+
                                 {activityData?.map((o, i) => <DriverDispComp key={i} obj={o} />)}
+
                                 <tr>
                                     <td className='border'></td>
                                     {activityData[0] && activityData[0]?.LocationGroup?.map((o, i) => (
-                                        <td className='fa-13 border text-center fw-bold' key={i}>
+                                        <td
+                                            className='fa-13 border text-center fw-bold'
+                                            key={i}
+                                            colSpan={o?.TripDetails?.length}
+                                        >
                                             {categoryTotals[o.TripCategory] ? NumberFormat(categoryTotals[o.TripCategory]) : '-'}
                                         </td>
                                     ))}
                                     <td className='fa-14 fw-bold border text-primary text-center'>{NumberFormat(totalTonnageValue)}</td>
                                 </tr>
+
                             </tbody>
                         </table>
                     </div>
@@ -235,103 +233,116 @@ const DriverActivities = () => {
                 <DialogTitle>
                     {inputValues?.Id ? 'Modify Activity' : 'Add Driver Activity'}
                 </DialogTitle>
-                <DialogContent>
-                    <div className="table-responsive">
-                        <table className="table">
-                            <tbody>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Date</td>
-                                    <td className='border-0' >
-                                        <input
-                                            type="date"
-                                            value={inputValues?.ActivityDate}
-                                            className='cus-inpt'
-                                            onChange={e => setInputValues(pre => ({ ...pre, ActivityDate: e.target.value }))}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Location</td>
-                                    <td className='border-0' >
-                                        <select
-                                            value={inputValues?.LocationDetails}
-                                            onChange={e => setInputValues(pre => ({ ...pre, LocationDetails: e.target.value }))}
-                                            className='cus-inpt'
-                                        >
-                                            <option value={'MILL'}>MILL</option>
-                                            <option value={'GODOWN'}>GODOWN</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>TYPE</td>
-                                    <td className='border-0' >
-                                        <select
-                                            value={inputValues?.TripCategory}
-                                            onChange={e => setInputValues(pre => ({ ...pre, TripCategory: e.target.value }))}
-                                            className='cus-inpt'
-                                        >
-                                            <option value={'LRY SHED & LOCAL'}>LRY SHED & LOCAL</option>
-                                            <option value={'OTHER GODOWNS'}>OTHER GODOWNS</option>
-                                            <option value={'TRANSFER'}>TRANSFER</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Driver Name</td>
-                                    <td className='border-0' >
-                                        <input
-                                            value={inputValues?.DriverName}
-                                            type='search'
-                                            list='driverList'
-                                            className='cus-inpt'
-                                            placeholder='Type or Search Driver name'
-                                            onChange={e => setInputValues(pre => ({ ...pre, DriverName: e.target.value }))}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Trip Number</td>
-                                    <td className='border-0' >
-                                        <input
-                                            value={inputValues?.TripNumber}
-                                            className='cus-inpt'
-                                            onInput={onlynum}
-                                            placeholder='Trip Count Number'
-                                            onChange={e => setInputValues(pre => ({ ...pre, TripNumber: e.target.value }))}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Tonnage Value</td>
-                                    <td className='border-0' >
-                                        <input
-                                            value={inputValues?.TonnageValue}
-                                            className='cus-inpt'
-                                            onInput={onlynum}
-                                            onChange={e => setInputValues(pre => ({ ...pre, TonnageValue: e.target.value }))}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className='border-0' style={{ verticalAlign: 'middle' }}>Time</td>
-                                    <td className='border-0' >
-                                        <input
-                                            type='time'
-                                            value={inputValues?.EventTime}
-                                            className='cus-inpt'
-                                            onChange={e => setInputValues(pre => ({ ...pre, EventTime: e.target.value }))}
-                                        />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={closeDialog}>Cancel</Button>
-                    <Button onClick={saveActivity}>SUBMIT</Button>
-                </DialogActions>
+                <form onSubmit={e => {
+                    e.preventDefault();
+                    saveActivity();
+                }}>
+                    <DialogContent>
+                        <div className="table-responsive">
+                            <table className="table">
+                                <tbody>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Date</td>
+                                        <td className='border-0' >
+                                            <input
+                                                type="date"
+                                                value={inputValues?.ActivityDate}
+                                                className='cus-inpt'
+                                                onChange={e => setInputValues(pre => ({ ...pre, ActivityDate: e.target.value }))}
+                                                required
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Location</td>
+                                        <td className='border-0' >
+                                            <select
+                                                value={inputValues?.LocationDetails}
+                                                onChange={e => setInputValues(pre => ({ ...pre, LocationDetails: e.target.value }))}
+                                                className='cus-inpt'
+                                                required
+                                            >
+                                                <option value={'MILL'}>MILL</option>
+                                                <option value={'GODOWN'}>GODOWN</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>TYPE</td>
+                                        <td className='border-0' >
+                                            <select
+                                                value={inputValues?.TripCategory}
+                                                onChange={e => setInputValues(pre => ({ ...pre, TripCategory: e.target.value }))}
+                                                className='cus-inpt'
+                                                required
+                                            >
+                                                <option value={'LRY SHED & LOCAL'}>LRY SHED & LOCAL</option>
+                                                <option value={'OTHER GODOWNS'}>OTHER GODOWNS</option>
+                                                <option value={'TRANSFER'}>TRANSFER</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Driver Name</td>
+                                        <td className='border-0' >
+                                            <input
+                                                value={inputValues?.DriverName}
+                                                type='search'
+                                                list='driverList'
+                                                required
+                                                className='cus-inpt'
+                                                placeholder='Type or Search Driver name'
+                                                onChange={e => setInputValues(pre => ({ ...pre, DriverName: e.target.value }))}
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Trip Number</td>
+                                        <td className='border-0' >
+                                            <input
+                                                value={inputValues?.TripNumber}
+                                                className='cus-inpt'
+                                                type='number'
+                                                required
+                                                min={1}
+                                                placeholder='Trip Count Number'
+                                                onChange={e => setInputValues(pre => ({ ...pre, TripNumber: e.target.value }))}
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Tonnage Value</td>
+                                        <td className='border-0' >
+                                            <input
+                                                value={inputValues?.TonnageValue}
+                                                className='cus-inpt'
+                                                onInput={onlynum}
+                                                required
+                                                onChange={e => setInputValues(pre => ({ ...pre, TonnageValue: e.target.value }))}
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Time</td>
+                                        <td className='border-0' >
+                                            <input
+                                                type='time'
+                                                value={inputValues?.EventTime}
+                                                required
+                                                className='cus-inpt'
+                                                onChange={e => setInputValues(pre => ({ ...pre, EventTime: e.target.value }))}
+                                            />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={closeDialog} type='button'>Cancel</Button>
+                        <Button type='submit'>SUBMIT</Button>
+                    </DialogActions>
+                </form>
             </Dialog>
 
             <datalist id='driverList'>

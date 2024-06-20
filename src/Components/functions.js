@@ -127,6 +127,10 @@ export const Division = (a, b) => {
     return Number(a) / Number(b)
 }
 
+export const validValue = (val) => {
+    return Boolean(val) ? val : ''
+}
+
 export const numberToWords = (prop) => {
     const number = Number(prop)
     const singleDigits = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];

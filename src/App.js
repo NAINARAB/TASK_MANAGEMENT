@@ -55,6 +55,7 @@ import PaymentReport from "./Pages/ERP/Payments/paymentReport";
 import AttendanceReportForEmployee from "./Pages/Attendance/attendanceReportForEmp";
 import EmployeeMaster from "./Pages/UserModule/employee";
 import DriverActivities from "./Pages/DataEntry/newDriverActivities";
+import GodownActivity from "./Pages/DataEntry/godownActivity";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -184,6 +185,7 @@ function App() {
                   <Route path="/changePassword" element={<ChangePassword />} />
 
                   <Route path="/dataEntry/drivers" element={<DriverActivities />} />
+                  <Route path="/dataEntry/godown" element={<GodownActivity />} />
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
                   <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />

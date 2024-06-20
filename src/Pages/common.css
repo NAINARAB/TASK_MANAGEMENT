@@ -261,6 +261,21 @@
   transform: translateY(-2px);
 }
 
+.cellHover {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cellHover:hover {
+  box-shadow: 2px 2px 4px 0.2px rgb(211, 210, 210) !important;
+  transform: translateY(-2px);
+}
+
+.cellHover:active {
+  box-shadow: none;
+  
+}
+
 .coloredDiv {
   padding: 1em;
   border-radius: 4px;
