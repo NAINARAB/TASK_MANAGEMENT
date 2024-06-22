@@ -14,8 +14,15 @@ export const LocalTime = (dateObj) => {
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
+export const getCurrentTime = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+}
+
 export const convertToTimeObject = (timeString) => {
-    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+    const [hours, minutes, seconds] = timeString ? timeString.split(':').map(Number) : '00:00:00';
 
     const date = new Date();
     date.setHours(hours);

@@ -114,15 +114,17 @@ const GodownActivity = () => {
 
 
                     <td className='fa-13 border text-center'>
-                        <IconButton
-                            onClick={() => {
-                                setInputValues(o?.DayEntries[0])
-                                setFilter(pre => ({ ...pre, dialog: true }));
-                            }}
-                            size='small'
-                        >
-                            <Edit className='fa-18' />
-                        </IconButton>
+                        {isEqualNumber(contextObj?.Edit_Rights, 1) && (
+                            <IconButton
+                                onClick={() => {
+                                    setInputValues(o?.DayEntries[0])
+                                    setFilter(pre => ({ ...pre, dialog: true }));
+                                }}
+                                size='small'
+                            >
+                                <Edit className='fa-18' />
+                            </IconButton>
+                        )}
                     </td>
                 </tr>
 
@@ -152,15 +154,17 @@ const GodownActivity = () => {
                             <td className='fa-14 border text-center fw-bold text-primary'>{validValue(oo?.SalesOtherGodown)}</td>
 
                             <td className='fa-13 border text-center'>
-                                <IconButton
-                                    onClick={() => {
-                                        setInputValues(oo)
-                                        setFilter(pre => ({ ...pre, dialog: true }));
-                                    }}
-                                    size='small'
-                                >
-                                    <Edit className='fa-18' />
-                                </IconButton>
+                                {isEqualNumber(contextObj?.Edit_Rights, 1) && (
+                                    <IconButton
+                                        onClick={() => {
+                                            setInputValues(oo)
+                                            setFilter(pre => ({ ...pre, dialog: true }));
+                                        }}
+                                        size='small'
+                                    >
+                                        <Edit className='fa-18' />
+                                    </IconButton>
+                                )}
                             </td>
                         </tr>
                     ))
@@ -262,7 +266,7 @@ const GodownActivity = () => {
                             <input
                                 value={inputValues.EntryDate}
                                 type='date'
-                                className='cus-inpt py-1'
+                                className='cus-inpt'
                                 onChange={e => setInputValues(pre => ({ ...pre, EntryDate: e.target.value }))}
                             />
                         </div>
@@ -271,7 +275,7 @@ const GodownActivity = () => {
                             <select
                                 value={inputValues?.LocationDetails}
                                 onChange={e => setInputValues(pre => ({ ...pre, LocationDetails: e.target.value }))}
-                                className='cus-inpt py-1'
+                                className='cus-inpt'
                                 required
                             >
                                 <option value={'MILL'}>MILL</option>
