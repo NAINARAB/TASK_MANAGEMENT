@@ -8,7 +8,71 @@ import "react-toastify/dist/ReactToastify.css";
 import FullCalendar from '@fullcalendar/react'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list';
-import { Card, CardContent } from '@mui/material'
+import { Card, CardContent } from '@mui/material';
+
+
+const statusColor = (id) => {
+    const numId = Number(id);
+    const color = ['bg-dark', 'bg-info', 'bg-warning', 'bg-success', 'bg-danger'];
+    return color[numId]
+}
+
+const formatTime24 = (time24) => {
+    const [hours, minutes] = time24.split(':').map(Number);
+
+    let hours12 = hours % 12;
+    hours12 = hours12 || 12;
+    const period = hours < 12 ? 'AM' : 'PM';
+    const formattedHours = hours12 < 10 ? '0' + hours12 : hours12;
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    const time12 = `${formattedHours}:${formattedMinutes} ${period}`;
+
+    return time12;
+}
+
+const formatTime = (milliseconds) => {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+
+    const formatNumber = (number) => {
+        return number < 10 ? `0${number}` : number;
+    };
+
+    return `${formatNumber(hours)}:${formatNumber(minutes % 60)}:${formatNumber(seconds % 60)}`;
+};
+
+function timeToMilliseconds(timeString) {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const totalMinutes = (hours * 60) + minutes;
+    const milliseconds = totalMinutes * 60000;
+
+    return milliseconds;
+}
+
+function millisecondsToTime(milliseconds) {
+    const date = new Date(milliseconds);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const formattedHours = hours < 10 ? '0' + hours : hours;
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    return formattedHours + ':' + formattedMinutes;
+}
+
+function addTimes(time1, time2) {
+    const [hours1, minutes1] = time1.split(':').map(Number);
+    const [hours2, minutes2] = time2.split(':').map(Number);
+    let totalHours = hours1 + hours2;
+    let totalMinutes = minutes1 + minutes2;
+    if (totalMinutes >= 60) {
+        totalHours += Math.floor(totalMinutes / 60);
+        totalMinutes %= 60;
+    }
+    const formattedHours = totalHours < 10 ? '0' + totalHours : totalHours;
+    const formattedMinutes = totalMinutes < 10 ? '0' + totalMinutes : totalMinutes;
+    return formattedHours + ':' + formattedMinutes;
+}
+
 
 const TodayTasks = () => {
     const localData = localStorage.getItem("user");
@@ -124,18 +188,6 @@ const TodayTasks = () => {
     }, [startTime, myTasks, reload, runningTaskId])
 
 
-    const formatTime24 = (time24) => {
-        const [hours, minutes] = time24.split(':').map(Number);
-
-        let hours12 = hours % 12;
-        hours12 = hours12 || 12;
-        const period = hours < 12 ? 'AM' : 'PM';
-        const formattedHours = hours12 < 10 ? '0' + hours12 : hours12;
-        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-        const time12 = `${formattedHours}:${formattedMinutes} ${period}`;
-
-        return time12;
-    }
 
     const startTimer = () => {
         fetch(`${api}startTask`, {
@@ -201,17 +253,76 @@ const TodayTasks = () => {
         }
     };
 
-    const formatTime = (milliseconds) => {
-        const seconds = Math.floor(milliseconds / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
+    const handleInputChange = (e, param) => {
+        const updatedValue = e.target.value;
+        setWorkInput((prevWorkInput) => {
+            const indexValue = prevWorkInput?.Det_string?.findIndex(item => Number(item.Param_Id) === Number(param.Param_Id));
 
-        const formatNumber = (number) => {
-            return number < 10 ? `0${number}` : number;
-        };
-
-        return `${formatNumber(hours)}:${formatNumber(minutes % 60)}:${formatNumber(seconds % 60)}`;
+            if (indexValue !== -1) {
+                const updatedDetString = [...prevWorkInput.Det_string];
+                updatedDetString[indexValue] = {
+                    ...updatedDetString[indexValue],
+                    Current_Value: updatedValue,
+                    Param_Id: param.Param_Id,
+                    Default_Value: param.Default_Value,
+                    Task_Id: param?.Task_Id
+                };
+                return {
+                    ...prevWorkInput,
+                    Det_string: updatedDetString
+                };
+            } else {
+                return {
+                    ...prevWorkInput,
+                    Det_string: [
+                        ...prevWorkInput.Det_string,
+                        {
+                            Current_Value: updatedValue,
+                            Param_Id: param.Param_Id,
+                            Default_Value: param.Default_Value,
+                            Task_Id: selectedTask?.Task_Id
+                        }
+                    ]
+                };
+            }
+        });
     };
+
+    const handleNonTimerInputChange = (e, param) => {
+        const updatedValue = e.target.value;
+        setNonTimerInput((prevWorkInput) => {
+            const indexValue = prevWorkInput?.Det_string?.findIndex(item => Number(item.Param_Id) === Number(param.Param_Id));
+
+            if (indexValue !== -1) {
+                const updatedDetString = [...prevWorkInput.Det_string];
+                updatedDetString[indexValue] = {
+                    ...updatedDetString[indexValue],
+                    Current_Value: updatedValue,
+                    Param_Id: param?.Param_Id,
+                    Default_Value: param?.Default_Value,
+                    Task_Id: param?.Task_Id
+                };
+                return {
+                    ...prevWorkInput,
+                    Det_string: updatedDetString
+                };
+            } else {
+                return {
+                    ...prevWorkInput,
+                    Det_string: [
+                        ...prevWorkInput.Det_string,
+                        {
+                            Current_Value: updatedValue,
+                            Param_Id: param?.Param_Id,
+                            Default_Value: param?.Default_Value,
+                            Task_Id: param?.Task_Id
+                        }
+                    ]
+                };
+            }
+        });
+    };
+
 
     const renderEventContent = (eventInfo) => {
         const obj = eventInfo.event.extendedProps.objectData;
@@ -251,37 +362,6 @@ const TodayTasks = () => {
         );
     };
 
-    function timeToMilliseconds(timeString) {
-        const [hours, minutes] = timeString.split(':').map(Number);
-        const totalMinutes = (hours * 60) + minutes;
-        const milliseconds = totalMinutes * 60000;
-
-        return milliseconds;
-    }
-
-    function millisecondsToTime(milliseconds) {
-        const date = new Date(milliseconds);
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const formattedHours = hours < 10 ? '0' + hours : hours;
-        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-        return formattedHours + ':' + formattedMinutes;
-    }
-
-    function addTimes(time1, time2) {
-        const [hours1, minutes1] = time1.split(':').map(Number);
-        const [hours2, minutes2] = time2.split(':').map(Number);
-        let totalHours = hours1 + hours2;
-        let totalMinutes = minutes1 + minutes2;
-        if (totalMinutes >= 60) {
-            totalHours += Math.floor(totalMinutes / 60);
-            totalMinutes %= 60;
-        }
-        const formattedHours = totalHours < 10 ? '0' + totalHours : totalHours;
-        const formattedMinutes = totalMinutes < 10 ? '0' + totalMinutes : totalMinutes;
-        return formattedHours + ':' + formattedMinutes;
-    }
-
     const openWorkDialog = (val) => {
         setWorkInput(initialWorkSaveValue);
         setWorkDialog(true)
@@ -291,10 +371,10 @@ const TodayTasks = () => {
         let xml = '<DocumentElement>';
         for (let obj of array) {
             xml += '<Data>';
-            xml += `<Task_Id>${String(obj?.Task_Id)}</Task_Id>`;
-            xml += `<Param_Id>${String(obj?.Param_Id)}</Param_Id>`;
-            xml += `<Default_Value>${String(obj?.Default_Value)}</Default_Value>`;
-            xml += `<Current_Value>${String(obj?.Current_Value)}</Current_Value>`;
+            xml += `<Task_Id>${obj?.Task_Id ? String(obj?.Task_Id) : 0}</Task_Id>`;
+            xml += `<Param_Id>${obj?.Param_Id ? String(obj?.Param_Id) : 0}</Param_Id>`;
+            xml += `<Default_Value>${obj?.Default_Value ? String(obj?.Default_Value) : ''}</Default_Value>`;
+            xml += `<Current_Value>${obj?.Current_Value ? String(obj?.Current_Value) : ''}</Current_Value>`;
             xml += '</Data>';
         }
         xml += '</DocumentElement>';
@@ -372,8 +452,9 @@ const TodayTasks = () => {
             }).catch(e => console.error(e))
     }
 
-    // useEffect(() => console.log(workInput.Det_string), [workInput.Det_string])
+    // useEffect(() => console.log(workInput), [workInput])
     // useEffect(() => console.log(nonTimerInput.Det_string), [nonTimerInput.Det_string])
+    // useEffect(() => console.log(selectedTask?.Param_Dts), [selectedTask?.Param_Dts])
 
     const openUnAssignedTaskDialog = () => {
         setAdditionalTaskInput(additionalTaskInitialValue);
@@ -398,12 +479,6 @@ const TodayTasks = () => {
                     toast.error(data.message)
                 }
             }).catch(e => console.error(e))
-    }
-
-    const statusColor = (id) => {
-        const numId = Number(id);
-        const color = ['bg-dark', 'bg-info', 'bg-warning', 'bg-success', 'bg-danger'];
-        return color[numId]
     }
 
 
@@ -527,9 +602,41 @@ const TodayTasks = () => {
                                     if (!startTime && elapsedTime === 0) {
                                         const selObj = eve.event.extendedProps?.objectData;
                                         if (Number(selObj?.Work_Status) !== 3 && Number(selObj?.Timer_Based) === 1) {
-                                            setSelectedTask(selObj); setDialog(true)
+                                            setSelectedTask(selObj); 
+                                            setDialog(true);
+                                            setWorkInput({
+                                                Work_Id: selObj?.Work_Id,
+                                                Project_Id: selObj?.Project_Id,
+                                                Sch_Id: selObj?.Sch_Id,
+                                                Task_Levl_Id: selObj?.Task_Levl_Id,
+                                                Task_Id: selObj?.Task_Id,
+                                                AN_No: selObj?.AN_No,
+                                                Emp_Id: parseData?.UserId,
+                                                Work_Done: selObj?.Work_Done,
+                                                Start_Time: selObj?.Start_Time,
+                                                End_Time: selObj?.End_Time,
+                                                Work_Status: selObj?.Work_Status,
+                                                Work_Dt: new Date(selObj?.Work_Dt).toISOString().split('T')[0],
+                                                Det_string: selObj?.Param_Dts
+                                            })
                                         } else if (Number(selObj?.Work_Status) !== 3) {
-                                            setSelectedTask(selObj); setNonTimerWorkDialog(true)
+                                            setSelectedTask(selObj); 
+                                            setNonTimerWorkDialog(true);
+                                            setNonTimerInput({
+                                                Work_Id: selObj?.Work_Id,
+                                                Project_Id: selObj?.Project_Id,
+                                                Sch_Id: selObj?.Sch_Id,
+                                                Task_Levl_Id: selObj?.Task_Levl_Id,
+                                                Task_Id: selObj?.Task_Id,
+                                                AN_No: selObj?.AN_No,
+                                                Emp_Id: parseData?.UserId,
+                                                Work_Done: selObj?.Work_Done,
+                                                Start_Time: selObj?.Start_Time,
+                                                End_Time: selObj?.End_Time,
+                                                Work_Status: selObj?.Work_Status,
+                                                Work_Dt: new Date(selObj?.Work_Dt).toISOString().split('T')[0],
+                                                Det_string: selObj?.Param_Dts,
+                                            })
                                         } else {
                                             toast.warn('This task is already completed')
                                         }
@@ -573,13 +680,45 @@ const TodayTasks = () => {
                                 datesSet={obj => setQueryDate({ ...queryDate, executedTaskDate: new Date(obj.endStr).toISOString().split('T')[0] })}
                                 eventClick={eve => {
                                     if (!startTime && elapsedTime === 0) {
-                                        const eveObj = eve.event.extendedProps.objectData;
-                                        if (new Date(eveObj?.Entry_Date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0]) {
+                                        const selObj = eve.event.extendedProps?.objectData;
+                                        if (new Date(selObj?.Entry_Date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0]) {
                                             setIsEdit(true)
-                                            if (Number(eveObj?.Timer_Based) === 0) {
-                                                setNonTimerInput(eveObj); setSelectedTask(eveObj); setNonTimerWorkDialog(true)
+                                            if (Number(selObj?.Timer_Based) === 0) {
+                                                setSelectedTask(selObj); 
+                                                setNonTimerWorkDialog(true)
+                                                setNonTimerInput({
+                                                    Work_Id: selObj?.Work_Id,
+                                                    Project_Id: selObj?.Project_Id,
+                                                    Sch_Id: selObj?.Sch_Id,
+                                                    Task_Levl_Id: selObj?.Task_Levl_Id,
+                                                    Task_Id: selObj?.Task_Id,
+                                                    AN_No: selObj?.AN_No,
+                                                    Emp_Id: parseData?.UserId,
+                                                    Work_Done: selObj?.Work_Done,
+                                                    Start_Time: selObj?.Start_Time,
+                                                    End_Time: selObj?.End_Time,
+                                                    Work_Status: selObj?.Work_Status,
+                                                    Work_Dt: new Date(selObj?.Work_Dt).toISOString().split('T')[0],
+                                                    Det_string: selObj?.Param_Dts,
+                                                })
                                             } else {
-                                                setWorkInput(eveObj); setSelectedTask(eveObj); setWorkDialog(true)
+                                                setSelectedTask(selObj); 
+                                                setWorkDialog(true)
+                                                setWorkInput({
+                                                    Work_Id: selObj?.Work_Id,
+                                                    Project_Id: selObj?.Project_Id,
+                                                    Sch_Id: selObj?.Sch_Id,
+                                                    Task_Levl_Id: selObj?.Task_Levl_Id,
+                                                    Task_Id: selObj?.Task_Id,
+                                                    AN_No: selObj?.AN_No,
+                                                    Emp_Id: parseData?.UserId,
+                                                    Work_Done: selObj?.Work_Done,
+                                                    Start_Time: selObj?.Start_Time,
+                                                    End_Time: selObj?.End_Time,
+                                                    Work_Status: selObj?.Work_Status,
+                                                    Work_Dt: new Date(selObj?.Work_Dt).toISOString().split('T')[0],
+                                                    Det_string: selObj?.Param_Dts
+                                                })
                                             }
                                         } else {
                                             toast.warn('You can only modify today works')
@@ -636,7 +775,7 @@ const TodayTasks = () => {
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <TabContext value={tabValue} >
 
                         <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'none' }}>
@@ -749,22 +888,12 @@ const TodayTasks = () => {
 
                         {selectedTask?.Param_Dts?.map((param, index) => (
                             <div key={index}>
-                                <label className="mb-2">{param?.Paramet_Name}</label>
+                                <label className="mt-2 mb-1">{param?.Paramet_Name}</label>
                                 <input
                                     type={param?.Paramet_Data_Type || 'text'}
                                     className="cus-inpt"
-                                    onChange={(e) => {
-                                        const updatedDetString = [...workInput.Det_string];
-                                        updatedDetString[index] = {
-                                            ...updatedDetString[index],
-                                            Current_Value: e.target.value,
-                                            Param_Id: param.Param_Id,
-                                            Default_Value: param.Default_Value,
-                                            Task_Id: selectedTask?.Task_Id
-                                        };
-                                        setWorkInput({ ...workInput, Det_string: updatedDetString });
-                                    }}
-                                    defaultValue={param?.Current_Value}
+                                    onChange={(e) => handleInputChange(e, param)}
+                                    value={workInput?.Det_string?.find(item => Number(item?.Param_Id) === Number(param?.Param_Id))?.Current_Value || ''}
                                     placeholder={param?.Paramet_Data_Type}
                                 />
                             </div>
@@ -866,19 +995,8 @@ const TodayTasks = () => {
                                             <input
                                                 type={param?.Paramet_Data_Type || 'text'}
                                                 className="cus-inpt"
-                                                onChange={(e) => {
-                                                    const updatedDetString = [...nonTimerInput.Det_string];
-                                                    updatedDetString[index] = {
-                                                        ...updatedDetString[index],
-                                                        Current_Value: e.target.value,
-                                                        Param_Id: param.Param_Id,
-                                                        Default_Value: param.Default_Value,
-                                                        Task_Id: selectedTask?.Task_Id
-                                                    };
-                                                    setNonTimerInput({ ...nonTimerInput, Det_string: updatedDetString });
-                                                }}
-                                                // value={param?.Default_Value}
-                                                // value={param?.Current_Value}
+                                                onChange={(e) => handleNonTimerInputChange(e, param)}
+                                                value={nonTimerInput?.Det_string?.find(item => Number(item?.Param_Id) === Number(param?.Param_Id))?.Current_Value || ''}
                                                 defaultValue={param?.Current_Value}
                                                 placeholder={param?.Paramet_Data_Type}
                                             />

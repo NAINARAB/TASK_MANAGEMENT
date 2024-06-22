@@ -44,7 +44,7 @@ const getIcons = (str) => {
         },
     ]
 
-    return iconArr.map(o => str === o.str ? o.icon : null)
+    return iconArr.find(o => str === o.str)?.icon || <></>
 }
 
 
