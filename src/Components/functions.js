@@ -14,11 +14,54 @@ export const LocalTime = (dateObj) => {
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
+export const TimeDisplay = (dateObj) => {
+    const reqTime = new Date(dateObj);
+    let hours = reqTime.getHours();
+    const minutes = reqTime.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+
+    const formattedTime = hours + ':' + minutesStr + ' ' + ampm;
+    return formattedTime;
+}
+
+export const formatTime24 = (time24) => {
+    const [hours, minutes] = time24.split(':').map(Number);
+
+    let hours12 = hours % 12;
+    hours12 = hours12 || 12;
+    const period = hours < 12 ? 'AM' : 'PM';
+    const formattedHours = hours12 < 10 ? '0' + hours12 : hours12;
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    const time12 = `${formattedHours}:${formattedMinutes} ${period}`;
+
+    return time12;
+}
+
 export const getCurrentTime = () => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+}
+
+export const UTCTime = (isoString) => {
+    const date = new Date(isoString);
+
+    let hours = date.getUTCHours();
+    const minutes = date.getUTCMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+
+    const time = hours + ':' + minutesStr + ' ' + ampm;
+    return time
 }
 
 export const convertToTimeObject = (timeString) => {

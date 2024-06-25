@@ -6,6 +6,11 @@
   scrollbar-width: none;
 }
 
+.tble-hed-stick {
+  position:sticky;
+  top: 0 ;
+}
+
 .tab-container::-webkit-scrollbar {
   display: none;
 }

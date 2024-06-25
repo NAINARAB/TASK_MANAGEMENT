@@ -1,8 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
-import { UnfoldMoreOutlined, Search } from '@mui/icons-material';
+import { UnfoldMoreOutlined } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { Tab, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Card, CardContent } from '@mui/material';
-import { TabPanel, TabList, TabContext } from '@mui/lab';
+import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Card, CardContent } from '@mui/material';
 import api from "../../../API";
 import DataTable from "react-data-table-component";
 import { MyContext } from "../../../Components/context/contextProvider";
@@ -40,7 +39,7 @@ const PaymentReport = () => {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            data.data.map(o => {
+                            data.data.forEach(o => {
                                 o.Created_At = new Date(o.Created_At)
                                 o.Total_Amount = Number(o.Total_Amount)
                             })
@@ -63,7 +62,7 @@ const PaymentReport = () => {
 
     useEffect(() => {
         setShowData(filteredData && filteredData.length > 0 ? filteredData : search.searchData === '' ? PHData : [])
-    }, [filteredData])
+    }, [filteredData, search.searchData])
 
 
     const clearVerifyDetails = () => {
@@ -123,7 +122,7 @@ const PaymentReport = () => {
                     </IconButton>
                 ) : <></>
             },
-            sortable: true,
+            sortable: true
         },
     ]
 

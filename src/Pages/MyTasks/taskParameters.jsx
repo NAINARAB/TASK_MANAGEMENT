@@ -2,7 +2,7 @@ import { IconButton, Dialog, DialogActions, DialogContent, DialogTitle, Button, 
 import { useEffect, useState } from 'react';
 import api from '../../API';
 import { toast } from "react-toastify";
-import { Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 const TaskParametersComp = () => {
     const initialValue = {
@@ -78,10 +78,10 @@ const TaskParametersComp = () => {
         setInputValue(initialValue)
     }
 
-    const openDeleteConfirmationDialog = (obj) => {
-        setInputValue(obj);
-        setDeleteDialog(true);
-    }
+    // const openDeleteConfirmationDialog = (obj) => {
+    //     setInputValue(obj);
+    //     setDeleteDialog(true);
+    // }
 
     const closeDeleteConfirmationDialog = () => {
         setInputValue(initialValue);

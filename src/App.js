@@ -57,6 +57,7 @@ import EmployeeMaster from "./Pages/UserModule/employee";
 import DriverActivities from "./Pages/DataEntry/newDriverActivities";
 import GodownActivity from "./Pages/DataEntry/godownActivity";
 import DeliveryActivity from "./Pages/DataEntry/deliveryActivity";
+import StaffActivity from "./Pages/DataEntry/staffActivity";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -188,6 +189,7 @@ function App() {
                   <Route path="/dataEntry/drivers" element={<DriverActivities />} />
                   <Route path="/dataEntry/godown" element={<GodownActivity />} />
                   <Route path="/dataEntry/delivery" element={<DeliveryActivity />} />
+                  <Route path="/dataEntry/staffs" element={<StaffActivity />} />
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
                   <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />

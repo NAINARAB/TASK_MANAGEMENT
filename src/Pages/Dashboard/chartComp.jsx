@@ -72,7 +72,7 @@ const PieChartComp = ({ TasksArray }) => {
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
-                                    const label = context.label || '';
+                                    // const label = context.label || '';
                                     const value = context.parsed || 0;
                                     const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
                                     const percentage = Math.round((value / total) * 100);

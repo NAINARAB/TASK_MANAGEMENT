@@ -268,21 +268,6 @@ const DriverActivities = () => {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>TYPE</td>
-                                        <td className='border-0' >
-                                            <select
-                                                value={inputValues?.TripCategory}
-                                                onChange={e => setInputValues(pre => ({ ...pre, TripCategory: e.target.value }))}
-                                                className='cus-inpt'
-                                                required
-                                            >
-                                                <option value={'LRY SHED & LOCAL'}>LRY SHED & LOCAL</option>
-                                                <option value={'OTHER GODOWNS'}>OTHER GODOWNS</option>
-                                                <option value={'TRANSFER'}>TRANSFER</option>
-                                            </select>
-                                        </td>
-                                    </tr>
-                                    <tr>
                                         <td className='border-0' style={{ verticalAlign: 'middle' }}>Driver Name</td>
                                         <td className='border-0' >
                                             <input
@@ -332,6 +317,21 @@ const DriverActivities = () => {
                                                 className='cus-inpt'
                                                 onChange={e => setInputValues(pre => ({ ...pre, EventTime: e.target.value }))}
                                             />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>TYPE</td>
+                                        <td className='border-0' >
+                                            <select
+                                                value={inputValues?.TripCategory}
+                                                onChange={e => setInputValues(pre => ({ ...pre, TripCategory: e.target.value }))}
+                                                className='cus-inpt'
+                                                required
+                                            >
+                                                <option value={'LRY SHED & LOCAL'}>LRY SHED & LOCAL</option>
+                                                <option value={'OTHER GODOWNS'}>OTHER GODOWNS</option>
+                                                <option value={'TRANSFER'}>TRANSFER</option>
+                                            </select>
                                         </td>
                                     </tr>
                                 </tbody>
