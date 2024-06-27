@@ -58,6 +58,7 @@ import DriverActivities from "./Pages/DataEntry/newDriverActivities";
 import GodownActivity from "./Pages/DataEntry/godownActivity";
 import DeliveryActivity from "./Pages/DataEntry/deliveryActivity";
 import StaffActivity from "./Pages/DataEntry/staffActivity";
+import ActivityImagesUpload from "./Pages/DataEntry/fileUploads";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -112,7 +113,6 @@ function App() {
     localStorage.clear();
     setLogin(false);
     window.location = '/'
-    // window.location = process.env.REACT_APP_ERP_LOGOUT
   }
 
   return (
@@ -126,7 +126,7 @@ function App() {
         ) : !login ? (
           <>
             <Routes>
-              <Route exact path="/" element={<LoginPage setLoginTrue={setLoginTrue} />} />
+              <Route exact path="*" element={<LoginPage setLoginTrue={setLoginTrue} />} />
             </Routes>
           </>
         ) : (
@@ -190,6 +190,7 @@ function App() {
                   <Route path="/dataEntry/godown" element={<GodownActivity />} />
                   <Route path="/dataEntry/delivery" element={<DeliveryActivity />} />
                   <Route path="/dataEntry/staffs" element={<StaffActivity />} />
+                  <Route path="/dataEntry/fileUpload" element={<ActivityImagesUpload />} />
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
                   <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />

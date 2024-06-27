@@ -109,3 +109,26 @@
     position: sticky;
     top: 0;
 }
+
+.drag-and-drop {
+    width: 100%;
+    padding: 15px;
+    border: 2px dashed #66afe9;
+    /* border-color: #66afe9; */
+    background-color: #eaf4fe;
+    border-radius: 10px;
+    outline: none;
+    resize: none;
+    font-size: 16px;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.drag-and-drop:focus {
+    border-color: #66afe9;
+    background-color: #eaf4fe;
+}
+
+.drag-and-drop.dragover {
+    border-color: #66afe9;
+    background-color: #eaf4fe;
+}
