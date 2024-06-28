@@ -28,6 +28,20 @@ export const TimeDisplay = (dateObj) => {
     return formattedTime;
 }
 
+export const extractHHMM = (dateObj) => {
+    const reqTime = new Date(dateObj);
+    let hours = reqTime.getUTCHours();
+    const minutes = reqTime.getUTCMinutes();
+
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    const hourStr = hours < 10 ? '0' + hours : hours;
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+
+    const formattedTime = hourStr + ':' + minutesStr;
+    return formattedTime;
+}
+
 export const formatTime24 = (time24) => {
     const [hours, minutes] = time24.split(':').map(Number);
 
@@ -103,6 +117,20 @@ export const timeDuration = (startDate, endDate) => {
     const pad = num => String(num).padStart(2, '0');
 
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+export const timeDifferenceHHMM = (startDate, endDate) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const diff = end - start;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    const pad = num => String(num).padStart(2, '0');
+
+    return `${pad(hours)}:${pad(minutes)}`;
 }
 
 export const onlynum = (e) => {

@@ -323,7 +323,7 @@ function MainComponent(props) {
             <h4 className="my-0 ps-3">ERP</h4>
           </div>
           <hr className="my-2" />
-          <div className="sidebar-body-div">
+          <div className="sidebar-body-div" style={{paddingBottom: '200px'}}>
 
             {sidebar.MainMenu.map((o, i) => (
               <DispNavButtons
