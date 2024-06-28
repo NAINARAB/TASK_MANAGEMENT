@@ -85,7 +85,7 @@ const WeightCheckActivity = () => {
         <>
             <Card>
                 <div className="p-2 border-bottom fa-16 fw-bold d-flex justify-content-between align-items-center">
-                    <span className="text-primary text-uppercase ps-3">file Uploads</span>
+                    <span className="text-primary text-uppercase ps-3">WeiGht Checking</span>
                     {isEqualNumber(contextObj?.Add_Rights, 1) && (
                         <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
                     )}
