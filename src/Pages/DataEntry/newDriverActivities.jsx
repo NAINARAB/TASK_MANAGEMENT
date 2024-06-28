@@ -1,10 +1,18 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { convertToTimeObject, createAbbreviation, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
+import { convertToTimeObject, createAbbreviation, getPreviousDate, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
 import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { MyContext } from '../../Components/context/contextProvider';
 
+
+
+const ContCard = ({ Value, Label }) => (
+    <div className="grid-card d-flex align-items-center justify-content-center flex-column">
+        <h1 style={{ fontSize: '45px', color: 'blue', margin: '0 0.5em' }}>{NumberFormat(Value)}</h1>
+        <h2 className='fa-20'>{Label}</h2>
+    </div>
+)
 
 const DriverActivities = () => {
     const storage = JSON.parse(localStorage.getItem('user'));
@@ -28,7 +36,8 @@ const DriverActivities = () => {
     const [filter, setFilter] = useState({
         reqDate: ISOString(),
         reqLocation: 'MILL',
-        dialog: false
+        dialog: false,
+        view: 'ONE',
     })
 
     useEffect(() => {
@@ -47,6 +56,10 @@ const DriverActivities = () => {
                 }
             })
             .catch(e => console.error(e))
+        // fetch(`${api}driverActivities/tripBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+        //     .then(res => res.json())
+        //     .then(data => console.log(data.data))
+        //     .catch(e => console.error(e))
     }, [reload, filter.reqDate, filter.reqLocation])
 
     const closeDialog = () => {
@@ -143,42 +156,11 @@ const DriverActivities = () => {
 
     const totalTonnageValue = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
 
-    return (
-        <>
+    const dispView = (val) => {
 
-
-            <Card>
-                <div className="p-3 fa-16 fw-bold border-bottom d-flex justify-content-between">
-                    <span>Driver Activities</span>
-                    {isEqualNumber(contextObj?.Add_Rights, 1) && (
-                        <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
-                    )}
-                </div>
-
-                <div className="d-flex p-2 px-3">
-                    <div>
-                        <label className='mb-1 w-100'>DATE</label>
-                        <input
-                            type="date"
-                            className='cus-inpt w-auto'
-                            value={filter.reqDate}
-                            onChange={e => setFilter(pre => ({ ...pre, reqDate: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className='mb-1 w-100'>LOCATION</label>
-                        <select
-                            className='cus-inpt w-auto'
-                            value={filter.reqLocation}
-                            onChange={e => setFilter(pre => ({ ...pre, reqLocation: e.target.value }))}
-                        >
-                            <option value="MILL">MILL</option>
-                            <option value="GODOWN">GODOWN</option>
-                        </select>
-                    </div>
-                </div>
-
-                <CardContent >
+        switch (val) {
+            case 'ONE':
+                return (
                     <div className="table-responsive">
                         <table className='table'>
 
@@ -222,6 +204,73 @@ const DriverActivities = () => {
                             </tbody>
                         </table>
                     </div>
+                )
+            case 'TWO':
+                return (
+                    <>
+                        <div className="my-2">
+                            <div className='cus-grid text-dark'>
+                                <ContCard Value={activityData?.length} Label={'DRIVERS'} />
+                                {Object.entries(categoryTotals).map(([objKey, objValue]) => <ContCard key={objKey} Value={objValue} Label={objKey} />)}
+                                <ContCard Value={totalTonnageValue} Label={'TOTAL'} />
+                                {/* <ContCard Value={totalTonnageValue} Label={'TRIPS'} /> */}
+                            </div>
+                        </div>
+                    </>
+                )
+            default:
+                return (
+                    <></>
+                )
+        }
+    }
+
+    return (
+        <>
+            <Card>
+                <div className="p-3 fa-16 fw-bold border-bottom d-flex justify-content-between">
+                    <span>Driver Activities</span>
+                    {isEqualNumber(contextObj?.Add_Rights, 1) && (
+                        <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
+                    )}
+                </div>
+
+                <div className="d-flex flex-wrap p-2 px-3">
+                    <div className='d-flex flex-column p-1'>
+                        <label className='mb-1'>DATE</label>
+                        <input
+                            type="date"
+                            className='cus-inpt w-auto'
+                            value={filter.reqDate}
+                            onChange={e => setFilter(pre => ({ ...pre, reqDate: e.target.value }))}
+                        />
+                    </div>
+                    <div className='d-flex flex-column p-1'>
+                        <label className='mb-1'>LOCATION</label>
+                        <select
+                            className='cus-inpt w-auto'
+                            value={filter.reqLocation}
+                            onChange={e => setFilter(pre => ({ ...pre, reqLocation: e.target.value }))}
+                        >
+                            <option value="MILL">MILL</option>
+                            <option value="GODOWN">GODOWN</option>
+                        </select>
+                    </div>
+                    <div className='d-flex flex-column p-1'>
+                        <label className='mb-1'>VIEW</label>
+                        <select
+                            className='cus-inpt w-auto'
+                            value={filter.view}
+                            onChange={e => setFilter(pre => ({ ...pre, view: e.target.value }))}
+                        >
+                            <option value="ONE">ONE</option>
+                            <option value="TWO">TWO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <CardContent >
+                    {dispView(filter.view)}
                 </CardContent>
             </Card>
 

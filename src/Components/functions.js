@@ -78,6 +78,19 @@ export const UTCTime = (isoString) => {
     return time
 }
 
+export const timeToDate = (time) => {
+
+    if (!time) {
+        console.error("No time input provided.");
+        return;
+    }
+
+    const [hours, minutes] = time.split(':').map(Number);
+    const dateObj = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
+
+    return dateObj;
+}
+
 export const convertToTimeObject = (timeString) => {
     const [hours, minutes, seconds] = timeString ? timeString.split(':').map(Number) : '00:00:00';
 

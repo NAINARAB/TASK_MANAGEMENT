@@ -382,6 +382,31 @@
   background-image: none !important;
 }
 
+.cus-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.grid-card{
+  padding: 1em;
+  border: none;
+  border-radius: 6px;
+  background-color: #f7f5f5;
+  width: 100%;
+  max-width: 380px;
+}
+
+.hov{
+  cursor: pointer !important;
+  transition: all 0.3s;
+}
+
+.hov:hover{
+  transform: translateY(-2px);
+  box-shadow: 2px 2px 4px rgb(119, 117, 117);
+}
+
 .task-grid {
   display: grid;
   gap: 20px;

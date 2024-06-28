@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { extractHHMM, isEqualNumber, ISOString, NumberFormat, Subraction, timeDifferenceHHMM, UTCTime } from '../../Components/functions';
+import { extractHHMM, isEqualNumber, ISOString, NumberFormat, Subraction, timeDifferenceHHMM, timeToDate, UTCTime } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
 import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
@@ -194,7 +194,7 @@ const WeightCheckActivity = () => {
                                         <td className='border-0' >
                                             <input
                                                 type="date"
-                                                value={inputValues?.EntryDate}
+                                                value={inputValues?.EntryDate ? ISOString(inputValues?.EntryDate) : ''}
                                                 className='cus-inpt'
                                                 onChange={e => setInputValues(pre => ({ ...pre, EntryDate: e.target.value }))}
                                                 required
@@ -237,7 +237,7 @@ const WeightCheckActivity = () => {
                                                 className='cus-inpt'
                                                 type='time'
                                                 required
-                                                onChange={e => setInputValues(pre => ({ ...pre, StartTime: e.target.value }))}
+                                                onChange={e => setInputValues(pre => ({ ...pre, StartTime: timeToDate(e.target.value) }))}
                                             />
                                         </td>
                                     </tr>
@@ -248,8 +248,9 @@ const WeightCheckActivity = () => {
                                                 value={inputValues?.EndTime ? extractHHMM(inputValues?.EndTime) : ''}
                                                 className='cus-inpt'
                                                 type='time'
+                                                min={inputValues.StartTime ? extractHHMM(inputValues?.StartTime) : ''}
                                                 required
-                                                onChange={e => setInputValues(pre => ({ ...pre, EndTime: e.target.value }))}
+                                                onChange={e => setInputValues(pre => ({ ...pre, EndTime: timeToDate(e.target.value) }))}
                                             />
                                         </td>
                                     </tr>
