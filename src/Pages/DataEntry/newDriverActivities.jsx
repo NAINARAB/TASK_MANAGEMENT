@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { convertToTimeObject, createAbbreviation, getPreviousDate, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
+import { convertToTimeObject, createAbbreviation, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
-import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Tab, Box } from '@mui/material';
+import { TabPanel, TabList, TabContext } from '@mui/lab';
 import { MyContext } from '../../Components/context/contextProvider';
 
-
-
 const ContCard = ({ Value, Label }) => (
-    <div className="grid-card d-flex align-items-center justify-content-center flex-column">
+    <div className="grid-card d-flex align-items-center justify-content-center flex-column cus-shadow">
         <h1 style={{ fontSize: '45px', color: 'blue', margin: '0 0.5em' }}>{NumberFormat(Value)}</h1>
         <h2 className='fa-20'>{Label}</h2>
     </div>
@@ -30,6 +29,7 @@ const DriverActivities = () => {
         CreatedBy: storage.UserId,
     }
     const [activityData, setActivityData] = useState([]);
+    const [driverBased, setDriverBased] = useState([])
     const [drivers, setDrivers] = useState([]);
     const [inputValues, setInputValues] = useState(initialValue);
     const [reload, setReload] = useState(false);
@@ -37,7 +37,7 @@ const DriverActivities = () => {
         reqDate: ISOString(),
         reqLocation: 'MILL',
         dialog: false,
-        view: 'ONE',
+        view: 'DATA ENTRY',
     })
 
     useEffect(() => {
@@ -56,10 +56,10 @@ const DriverActivities = () => {
                 }
             })
             .catch(e => console.error(e))
-        // fetch(`${api}driverActivities/tripBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
-        //     .then(res => res.json())
-        //     .then(data => console.log(data.data))
-        //     .catch(e => console.error(e))
+        fetch(`${api}driverActivities/tripBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+            .then(res => res.json())
+            .then(data => setDriverBased(data.data))
+            .catch(e => console.error(e))
     }, [reload, filter.reqDate, filter.reqLocation])
 
     const closeDialog = () => {
@@ -159,7 +159,7 @@ const DriverActivities = () => {
     const dispView = (val) => {
 
         switch (val) {
-            case 'ONE':
+            case 'DATA ENTRY':
                 return (
                     <div className="table-responsive">
                         <table className='table'>
@@ -205,23 +205,181 @@ const DriverActivities = () => {
                         </table>
                     </div>
                 )
-            case 'TWO':
+            case 'ABSTRACT':
                 return (
                     <>
                         <div className="my-2">
                             <div className='cus-grid text-dark'>
                                 <ContCard Value={activityData?.length} Label={'DRIVERS'} />
-                                {Object.entries(categoryTotals).map(([objKey, objValue]) => <ContCard key={objKey} Value={objValue} Label={objKey} />)}
+                                <ContCard
+                                    Value={driverBased?.reduce((sum, obj) => {
+                                        let total = 0;
+                                        total += obj?.Trips?.length || 0
+                                        return total + sum;
+                                    }, 0)}
+                                    Label={'TRIPS'}
+                                />
                                 <ContCard Value={totalTonnageValue} Label={'TOTAL'} />
-                                {/* <ContCard Value={totalTonnageValue} Label={'TRIPS'} /> */}
+                                {Object.entries(categoryTotals).map(([objKey, objValue]) => <ContCard key={objKey} Value={objValue} Label={objKey} />)}
                             </div>
                         </div>
                     </>
                 )
-            default:
+            case 'CATEGORY BASED':
                 return (
-                    <></>
+                    <div className="d-flex justify-content-around flex-wrap my-3">
+                        {Object.entries(categoryTotals).map(([objKey, objValue]) => (
+                            <div className="grid-card w-100 my-2 cus-shadow" style={{ backgroundColor: '#EDF0F7' }} key={objKey}>
+                                <h6 className=' fw-bold fa-18 d-flex justify-content-between'>
+                                    <span>{objKey}</span>
+                                    <span>{NumberFormat(objValue)}</span>
+                                </h6>
+                                {activityData?.map(oo => (
+                                    oo?.LocationGroup?.map(loc => (objKey === loc?.TripCategory) && (
+                                        loc.TripDetails?.map(trip => trip?.Trips?.map((tr, ti) => (
+                                            <div className="p-2 my-2 border grid-card bg-white d-flex justify-content-between" key={ti}>
+                                                <span>{tr?.DriverName}</span>
+                                                <span>
+                                                    <span className='pe-2 text-primary fw-bold'>{NumberFormat(tr?.TonnageValue)}</span>
+                                                    {tr?.EventTime ? convertToTimeObject(tr?.EventTime) : '-'}
+                                                </span>
+                                            </div>
+                                        )))
+                                    ))
+                                ))}
+                            </div>
+                        ))}
+                    </div>
                 )
+            case 'DRIVER BASED':
+                return (
+                    driverBased?.map((o, i) => (
+                        <Card
+                            component={Paper}
+                            variant='outlined'
+                            className="p-3 my-3 "
+                        >
+                            <div
+                                key={i}
+                            >
+                                <h6 className='blue-text mb-2 pb-2 d-flex justify-content-between border-bottom fa-20'>
+                                    <span>{o?.DriverName}</span>
+                                    <span>
+                                        {NumberFormat(o?.Trips?.reduce((sum, obj) => {
+                                            let total = 0;
+                                            obj?.Categories?.forEach(cat => total += cat?.TonnageValue || 0)
+                                            return total + sum
+                                        }, 0))}
+                                        <span className='text-muted fa-14 ps-2 fw-light'>/ {o?.Trips?.length}</span>
+                                    </span>
+                                </h6>
+
+                                <div className="d-flex justify-content-around flex-wrap">
+                                    {Object.keys(categoryTotals).map((objKey, ind) => (
+                                        <div
+                                            className="d-flex justify-content-between align-items-center m-2 border rounded-3 p-3"
+                                            style={{ minWidth: '250px', backgroundColor: '#EAFEFF' }}
+                                        >
+                                            <h6 className='fw-bold mb-0 text-muted'>{objKey}</h6>
+                                            <h6 className='blue-text mb-0'>
+                                                {NumberFormat(o?.Trips?.reduce((totalSum, oo) => {
+                                                    let ovTotal = 0;
+                                                    ovTotal += oo?.Categories?.reduce((sum, cat) => {
+                                                        let total = 0;
+                                                        total += (cat?.TripCategory === objKey) ? cat?.TonnageValue : 0
+                                                        return total + sum
+                                                    }, 0)
+                                                    return ovTotal + totalSum
+                                                }, 0))}
+                                            </h6>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* categoryBased */}
+                                {/* <div className="table-responsive rounded-3 overflow-hidden border p-0">
+                                <table className="table m-0">
+                                    <thead>
+                                        <tr>
+                                            <th className='fa-14 text-center border-end border-bottom'>Trip No</th>
+                                            {Object.keys(categoryTotals).map(objKey => (
+                                                <th className='fa-14 text-center  border-end border-bottom' key={objKey}>{objKey}</th>
+                                            ))}
+                                            <th className='fa-14 text-center'>Trip-Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {o?.Trips?.map((trip, tripInd) => (
+                                            <tr key={tripInd}>
+                                                <td className='fa-13 border-end border-bottom'>{trip?.TripNumber}</td>
+                                                {Object.keys(categoryTotals).map(objKey => (
+                                                    <td className='fa-13 border-end border-bottom' key={objKey}>
+                                                        {trip?.Categories?.map((cat, catInd) => (cat?.TripCategory === objKey) && (
+                                                            <p key={catInd} className='mb-0 d-flex justify-content-between'>
+                                                                <span className='text-primary fw-bold'>{cat?.TonnageValue}</span>
+                                                                {cat?.EventTime ? convertToTimeObject(cat?.EventTime) : '-'}
+                                                            </p>
+                                                        ))}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div> */}
+
+                                <div className="table-responsive rounded-3 overflow-hidden border p-0">
+                                    <table className="table m-0">
+                                        <thead>
+                                            <tr>
+                                                <th className='fa-14 text-center border-bottom'>Trip No</th>
+                                                <th className='fa-14 text-center '>Category</th>
+                                                <th className='fa-14 text-center '>Tonnage</th>
+                                                <th className='fa-14 text-center '>Time</th>
+                                                <th className='fa-14 text-center '>Trip-Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {o?.Trips?.map((trip, tripInd) => {
+                                                const categoryCount = trip?.Categories?.length || 1;
+                                                const totalTonnage = trip?.Categories?.reduce((sum, obj) => sum + (obj?.TonnageValue || 0), 0);
+
+                                                return (
+                                                    trip?.Categories?.map((cat, catInd) => (
+                                                        <tr key={`${tripInd}-${catInd}`}>
+                                                            {catInd === 0 && (
+                                                                <td className='fa-14 border-end border-bottom text-center fw-bold' rowSpan={categoryCount} style={{ verticalAlign: 'middle' }}>
+                                                                    {trip?.TripNumber}
+                                                                </td>
+                                                            )}
+                                                            <td className='fa-13 border-end border-bottom text-center'>
+                                                                {cat?.TripCategory}
+                                                            </td>
+                                                            <td className='fa-13 border-end border-bottom text-center'>
+                                                                {cat?.TonnageValue}
+                                                            </td>
+                                                            <td className='fa-13 border-end border-bottom text-center'>
+                                                                {cat?.EventTime ? convertToTimeObject(cat?.EventTime) : '-'}
+                                                            </td>
+                                                            {catInd === 0 && (
+                                                                <td className='fa-16 border-end border-bottom text-center blue-text' rowSpan={categoryCount} style={{ verticalAlign: 'middle' }}>
+                                                                    {NumberFormat(totalTonnage)}
+                                                                </td>
+                                                            )}
+                                                        </tr>
+                                                    ))
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </Card>
+                    ))
+                )
+            default:
+                return <></>
         }
     }
 
@@ -256,21 +414,22 @@ const DriverActivities = () => {
                             <option value="GODOWN">GODOWN</option>
                         </select>
                     </div>
-                    <div className='d-flex flex-column p-1'>
-                        <label className='mb-1'>VIEW</label>
-                        <select
-                            className='cus-inpt w-auto'
-                            value={filter.view}
-                            onChange={e => setFilter(pre => ({ ...pre, view: e.target.value }))}
-                        >
-                            <option value="ONE">ONE</option>
-                            <option value="TWO">TWO</option>
-                        </select>
-                    </div>
                 </div>
 
                 <CardContent >
-                    {dispView(filter.view)}
+                    <TabContext value={filter.view}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <TabList indicatorColor='transparant' onChange={(e, n) => setFilter(pre => ({ ...pre, view: n }))} aria-label="">
+                                <Tab sx={filter.view === 'DATA ENTRY' ? { backgroundColor: '#c6d7eb' } : {}} label={'DATA ENTRY'} value='DATA ENTRY' />
+                                <Tab sx={filter.view === 'ABSTRACT' ? { backgroundColor: '#c6d7eb' } : {}} label="ABSTRACT" value='ABSTRACT' />
+                                <Tab sx={filter.view === 'CATEGORY BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="CATEGORY BASED" value='CATEGORY BASED' />
+                                <Tab sx={filter.view === 'DRIVER BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="DRIVER BASED" value='DRIVER BASED' />
+                            </TabList>
+                        </Box>
+                        {['DATA ENTRY', 'ABSTRACT', 'CATEGORY BASED', 'DRIVER BASED'].map(o => (
+                            <TabPanel value={o} sx={{ px: 0, py: 2 }}>{dispView(o)}</TabPanel>
+                        ))}
+                    </TabContext>
                 </CardContent>
             </Card>
 

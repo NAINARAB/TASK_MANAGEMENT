@@ -397,6 +397,11 @@
   max-width: 380px;
 }
 
+.blue-text {
+  color: blue !important;
+  font-weight: bold;
+}
+
 .hov{
   cursor: pointer !important;
   transition: all 0.3s;
