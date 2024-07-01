@@ -96,18 +96,17 @@ const InwardActivity = () => {
             <CardContent>
                 {inwardActivity?.length > 0 && (
                     inwardActivity?.map((o, i) => (
-                        <>
+                        <div key={i}>
                             <h5>Updated At: <span className='text-muted'>{o?.modifiedTime && LocalDateWithTime(o?.modifiedTime)}</span></h5>
                             <Tooltip title='Click image to Download'>
                                 <img
-                                    key={i}
                                     src={o?.url}
                                     alt="img"
-                                    onClick={() => saveImage(o)}
+                                    onClick={() => saveImage(o?.url)}
                                     style={{ maxWidth: '100%', maxHeight: 700, marginTop: 10, cursor: 'pointer' }}
                                 />
                             </Tooltip>
-                        </>
+                        </div>
                     ))
                 )}
             </CardContent>

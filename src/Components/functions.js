@@ -30,16 +30,12 @@ export const TimeDisplay = (dateObj) => {
 
 export const extractHHMM = (dateObj) => {
     const reqTime = new Date(dateObj);
-    let hours = reqTime.getUTCHours();
-    const minutes = reqTime.getUTCMinutes();
-
-    hours = hours % 12;
-    hours = hours ? hours : 12; 
+    const hours = reqTime.getUTCHours();
+    const minutes = reqTime.getUTCMinutes(); 
     const hourStr = hours < 10 ? '0' + hours : hours;
     const minutesStr = minutes < 10 ? '0' + minutes : minutes;
 
-    const formattedTime = hourStr + ':' + minutesStr;
-    return formattedTime;
+    return hourStr + ':' + minutesStr;
 }
 
 export const formatTime24 = (time24) => {
@@ -82,7 +78,7 @@ export const timeToDate = (time) => {
 
     if (!time) {
         console.error("No time input provided.");
-        return;
+        return new Date(Date.UTC(1970, 0, 1, 12, 0, 0));
     }
 
     const [hours, minutes] = time.split(':').map(Number);
@@ -130,6 +126,24 @@ export const timeDuration = (startDate, endDate) => {
     const pad = num => String(num).padStart(2, '0');
 
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+export const customTimeDifference = (startTime, endTime) => {
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+    const start = new Date(1970, 0, 1, startHours, startMinutes);
+    const end = new Date(1970, 0, 1, endHours, endMinutes);
+
+    const diff = end - start;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    // const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    const pad = num => String(num).padStart(2, '0');
+
+    return `${pad(hours)}:${pad(minutes)}`;
 }
 
 export const timeDifferenceHHMM = (startDate, endDate) => {

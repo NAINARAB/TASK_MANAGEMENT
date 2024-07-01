@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { extractHHMM, isEqualNumber, ISOString, NumberFormat, Subraction, timeDifferenceHHMM, timeToDate, UTCTime } from '../../Components/functions';
+import { customTimeDifference, extractHHMM, isEqualNumber, ISOString, NumberFormat, Subraction, timeToDate, UTCTime } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
 import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
@@ -15,8 +15,8 @@ const WeightCheckActivity = () => {
         EntryDate: ISOString(),
         LocationDetails: 'MILL',
         StockItem: '',
-        StartTime: '1970-01-01T10:00:00.000Z',
-        EndTime: '1970-01-01T12:00:00.000Z',
+        StartTime: '10:00',
+        EndTime: '12:00',
         InputKG: 0,
         OutputKG: 0,
         WeingtCheckedBy: '',
@@ -50,7 +50,13 @@ const WeightCheckActivity = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    setActivityData(data.data)
+                    const timeformat = data.data?.map(o => ({
+                        ...o,
+                        StartTime: extractHHMM(o?.StartTime),
+                        EndTime: extractHHMM(o?.EndTime),
+                    }))
+                    setActivityData(timeformat)
+                    
                 }
             })
             .catch(e => console.error(e))
@@ -142,13 +148,13 @@ const WeightCheckActivity = () => {
                                                 }}
                                             >{o?.StockItem}</td>
                                             <td className='border text-center fa-13'>
-                                                {o?.StartTime ? UTCTime(o?.StartTime) : '-'}
+                                                {o?.StartTime ? UTCTime(timeToDate(o?.StartTime)) : '-'}
                                             </td>
                                             <td className='border text-center fa-13'>
-                                                {o?.EndTime ? UTCTime(o?.EndTime) : '-'}
+                                                {o?.EndTime ? UTCTime(timeToDate(o?.EndTime)) : '-'}
                                             </td>
                                             <td className='border text-center fa-13 text-primary fw-bold'>
-                                                {(o?.StartTime && o?.EndTime) ? timeDifferenceHHMM(o?.StartTime, o?.EndTime) : '-'}
+                                                {(o?.StartTime && o?.EndTime) ? customTimeDifference(o?.StartTime, o?.EndTime) : '-'}
                                             </td>
                                             <td className='border text-center fa-13'>
                                                 {o?.InputKG ? NumberFormat(o?.InputKG) : '-'}
@@ -233,11 +239,11 @@ const WeightCheckActivity = () => {
                                         <td className='border-0 fa-15' style={{ verticalAlign: 'middle' }}>Start Time</td>
                                         <td className='border-0'>
                                             <input
-                                                value={inputValues?.StartTime ? extractHHMM(inputValues?.StartTime) : ''}
+                                                value={inputValues?.StartTime ? inputValues?.StartTime : ''}
                                                 className='cus-inpt'
                                                 type='time'
                                                 required
-                                                onChange={e => setInputValues(pre => ({ ...pre, StartTime: timeToDate(e.target.value) }))}
+                                                onChange={e => setInputValues(pre => ({ ...pre, StartTime: e.target.value }))}
                                             />
                                         </td>
                                     </tr>
@@ -245,12 +251,12 @@ const WeightCheckActivity = () => {
                                         <td className='border-0 fa-15' style={{ verticalAlign: 'middle' }}>End Time</td>
                                         <td className='border-0' >
                                             <input
-                                                value={inputValues?.EndTime ? extractHHMM(inputValues?.EndTime) : ''}
+                                                value={inputValues?.EndTime ? inputValues?.EndTime : ''}
                                                 className='cus-inpt'
                                                 type='time'
                                                 min={inputValues.StartTime ? extractHHMM(inputValues?.StartTime) : ''}
                                                 required
-                                                onChange={e => setInputValues(pre => ({ ...pre, EndTime: timeToDate(e.target.value) }))}
+                                                onChange={e => setInputValues(pre => ({ ...pre, EndTime: e.target.value }))}
                                             />
                                         </td>
                                     </tr>

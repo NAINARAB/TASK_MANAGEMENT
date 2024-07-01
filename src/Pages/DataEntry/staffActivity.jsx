@@ -2,7 +2,8 @@ import React, { useEffect, useState, useContext } from 'react';
 import { isEqualNumber, ISOString, NumberFormat, onlynum, UTCTime } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
-import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Tab, Box } from '@mui/material';
+import { TabPanel, TabList, TabContext } from '@mui/lab';
 import { MyContext } from '../../Components/context/contextProvider';
 
 
@@ -20,13 +21,15 @@ const StaffActivity = () => {
         EntryBy: storage.UserId,
     }
     const [activityData, setActivityData] = useState([]);
+    const [staffBasedData, setStaffBasedData] = useState([]);
     const [staffs, setStaffs] = useState([]);
     const [inputValues, setInputValues] = useState(initialValue);
     const [reload, setReload] = useState(false);
     const [filter, setFilter] = useState({
         reqDate: ISOString(),
         reqLocation: 'MILL',
-        dialog: false
+        dialog: false,
+        view: 'DATA ENTRY',
     })
 
     useEffect(() => {
@@ -37,15 +40,31 @@ const StaffActivity = () => {
     }, [reload])
 
     useEffect(() => {
-        fetch(`${api}staffActivities?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    setActivityData(data.data)
-                }
-            })
-            .catch(e => console.error(e))
-    }, [reload, filter.reqDate, filter.reqLocation])
+        if (filter.view === 'DATA ENTRY') {
+            setActivityData([])
+            fetch(`${api}staffActivities?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setActivityData(data.data)
+                    }
+                })
+                .catch(e => console.error(e))
+        }
+
+        if (filter.view === 'STAFF BASED') {
+            setStaffBasedData([]);
+            fetch(`${api}staffActivities/staffBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setStaffBasedData(data.data)
+                    }
+                })
+                .catch(e => console.error(e))
+        }
+
+    }, [reload, filter.reqDate, filter.reqLocation, filter.view])
 
     const closeDialog = () => {
         setFilter(pre => ({ ...pre, dialog: false }));
@@ -71,40 +90,10 @@ const StaffActivity = () => {
             }).catch(e => console.error(e))
     }
 
-    return (
-        <>
-            <Card>
-                <div className="p-3 fa-16 fw-bold border-bottom d-flex justify-content-between">
-                    <span>Driver Activities</span>
-                    {isEqualNumber(contextObj?.Add_Rights, 1) && (
-                        <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
-                    )}
-                </div>
-
-                <div className="d-flex p-2 px-3">
-                    <div>
-                        <label className='mb-1 w-100'>DATE</label>
-                        <input
-                            type="date"
-                            className='cus-inpt w-auto'
-                            value={filter.reqDate}
-                            onChange={e => setFilter(pre => ({ ...pre, reqDate: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className='mb-1 w-100'>LOCATION</label>
-                        <select
-                            className='cus-inpt w-auto'
-                            value={filter.reqLocation}
-                            onChange={e => setFilter(pre => ({ ...pre, reqLocation: e.target.value }))}
-                        >
-                            <option value="MILL">MILL</option>
-                            <option value="GODOWN">GODOWN</option>
-                        </select>
-                    </div>
-                </div>
-
-                <CardContent>
+    const dispView = (scr) => {
+        switch (scr) {
+            case 'DATA ENTRY':
+                return (
                     <div className="table-responsive">
                         <table className="table">
                             <thead>
@@ -160,6 +149,103 @@ const StaffActivity = () => {
                             </tbody>
                         </table>
                     </div>
+                )
+            case 'STAFF BASED':
+                return (
+                    <>
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th className='fa-14 text-center border'>Sno</th>
+                                        <th className='fa-14 text-center border'>Staff Name</th>
+                                        {staffBasedData[0]?.Categories?.map((obj, ind) => (
+                                            <th className='fa-14 text-center border' key={ind}>{obj?.Category}</th>
+                                        ))}
+                                        <th className='fa-14 text-center border'>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {staffBasedData?.map((o, i) => (
+                                        <tr key={i}>
+                                            <td className='fa-13 text-center border'>{i + 1}</td>
+                                            <td className='fa-13 text-center border'>{o?.StaffName}</td>
+                                            {o?.Categories?.map((obj, ind) => (
+                                                <td className='fa-13 text-center border' key={ind}>
+                                                    {obj?.StaffDetails?.Tonnage ? NumberFormat(obj?.StaffDetails?.Tonnage) : ''}
+                                                </td>
+                                            ))}
+                                            <td className='fa-14 text-center border blue-text'>
+                                                {NumberFormat(o?.Categories?.reduce((sum, obj) => {
+                                                    let total = 0;
+                                                    total += obj?.StaffDetails?.Tonnage || 0
+                                                    return total + sum
+                                                }, 0))}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )
+            default: return <></>
+        }
+    }
+
+    return (
+        <>
+            <Card>
+                <div className="p-3 fa-16 fw-bold border-bottom d-flex justify-content-between">
+                    <span>Staff Activities</span>
+                    {isEqualNumber(contextObj?.Add_Rights, 1) && (
+                        <Button variant='outlined' onClick={() => setFilter(pre => ({ ...pre, dialog: true }))}>Add Activity</Button>
+                    )}
+                </div>
+
+                <div className="d-flex p-2 px-3">
+                    <div>
+                        <label className='mb-1 w-100'>DATE</label>
+                        <input
+                            type="date"
+                            className='cus-inpt w-auto'
+                            value={filter.reqDate}
+                            onChange={e => setFilter(pre => ({ ...pre, reqDate: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label className='mb-1 w-100'>LOCATION</label>
+                        <select
+                            className='cus-inpt w-auto'
+                            value={filter.reqLocation}
+                            onChange={e => setFilter(pre => ({ ...pre, reqLocation: e.target.value }))}
+                        >
+                            <option value="MILL">MILL</option>
+                            <option value="GODOWN">GODOWN</option>
+                        </select>
+                    </div>
+                </div>
+
+                <CardContent>
+                    <TabContext value={filter.view}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <TabList
+                                indicatorColor='transparant'
+                                onChange={(e, n) => setFilter(pre => ({ ...pre, view: n }))}
+                                variant="scrollable"
+                                scrollButtons="auto"
+                                allowScrollButtonsMobile
+                            >
+                                <Tab sx={filter.view === 'DATA ENTRY' ? { backgroundColor: '#c6d7eb' } : {}} label={'DATA ENTRY'} value='DATA ENTRY' />
+                                <Tab sx={filter.view === 'STAFF BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="STAFF BASED" value='STAFF BASED' />
+                            </TabList>
+                        </Box>
+                        {['DATA ENTRY', 'STAFF BASED'].map(o => (
+                            <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
+                                {(activityData.length || staffBasedData.length) ? dispView(o) : <></>}
+                            </TabPanel>
+                        ))}
+                    </TabContext>
                 </CardContent>
             </Card>
 

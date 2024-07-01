@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { firstDayOfMonth, isEqualNumber, ISOString, LocalDate, LocalDateWithTime, validValue, onlynum } from '../../Components/functions';
+import { firstDayOfMonth, isEqualNumber, ISOString, LocalDate, LocalDateWithTime, validValue, onlynum, Addition, NumberFormat } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
-import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tab, Box } from '@mui/material';
+import { TabPanel, TabList, TabContext } from '@mui/lab';
 import { Edit } from '@mui/icons-material'
 import { MyContext } from '../../Components/context/contextProvider';
 
@@ -34,6 +35,7 @@ const GodownActivity = () => {
         Todate: ISOString(),
         LocationDetails: 'MILL',
         dialog: false,
+        view: 'DATA ENTRY'
     })
 
 
@@ -173,6 +175,73 @@ const GodownActivity = () => {
         )
     }
 
+    const dispView = (val) => {
+        switch (val) {
+            case 'DATA ENTRY':
+                return (
+                    <div className="table-responsive">
+                        <table className="table">
+
+                            <thead>
+                                <tr>
+                                    <th className='border' colSpan={2} ></th>
+                                    <th className='fw-bold fa-13 border text-center text-muted' colSpan={4}>INWARD</th>
+                                    <th className='fw-bold fa-13 border text-center text-muted' colSpan={2}>MANAGEMENT</th>
+                                    <th className='fw-bold fa-13 border text-center text-muted' colSpan={7}>OUTWARD</th>
+                                    <th className='border'></th>
+                                </tr>
+                                <tr>
+                                    {[
+                                        'SNo', 'DATE', 'TOTAL', 'PURCHASE', 'OTHER GODOWN', 'TRANSFER', 'HANDLE',
+                                        'WG CHECKING', 'TOTAL', 'SALES TOTAL', 'LORRY SHED', 'VANDI VARUM', 'DD SALES', 'TRANSFER', 'OTHER GODOWN', 'ACTION'
+                                    ].map((o, i) => (
+                                        <td className='border fa-12 text-center' key={i}>{o}</td>
+                                    ))}
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {godownData?.map((o, i) => <RowComp o={o} sno={i + 1} key={i} />)}
+                            </tbody>
+
+                        </table>
+                    </div>
+                )
+            case 'ABSTRACT':
+                return (
+                    <>
+                        <div className="table-responsive">
+                            <table className="table mb-0">
+                                <thead>
+                                    <tr>
+                                        {['Sno', 'Date', 'Entries', 'INWARD', 'MANAGEMENT', 'OUTWARD'].map(o => (
+                                            <th className='fa-14 border text-center text-muted' key={o}>{o}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {godownData?.map((o, i) => (
+                                        <tr key={i}>
+                                            <td className='fa-13 border text-center'>{i + 1}</td>
+                                            <td className='fa-13 border text-center'>{o?.EntryDate ? LocalDate(o?.EntryDate) : '-'}</td>
+                                            <td className='fa-13 border text-center'>{o?.DayEntries?.length}</td>
+                                            <td className='fa-13 border text-center'>{validValue(o?.DayEntries[0]?.PurchaseTotal)}</td>
+                                            {/* 'Handle', 'WGChecking' */}
+                                            <td className='fa-13 border text-center'>
+                                                {validValue(NumberFormat(Addition(o?.DayEntries[0]?.Handle, o?.DayEntries[0]?.WGChecking)))}
+                                            </td>
+                                            <td className='fa-13 border text-center'>{validValue(o?.DayEntries[0]?.SalesTotal)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )
+            default: return <></>
+        }
+    }
+
 
     return (
         <>
@@ -219,33 +288,25 @@ const GodownActivity = () => {
                         </div>
                     </div>
 
-                    <div className="table-responsive">
-                        <table className="table">
-
-                            <thead>
-                                <tr>
-                                    <th className='border' colSpan={2} ></th>
-                                    <th className='fw-bold fa-13 border text-center text-muted' colSpan={4}>INWARD</th>
-                                    <th className='fw-bold fa-13 border text-center text-muted' colSpan={2}>MANAGEMENT</th>
-                                    <th className='fw-bold fa-13 border text-center text-muted' colSpan={7}>OUTWARD</th>
-                                    <th className='border'></th>
-                                </tr>
-                                <tr>
-                                    {[
-                                        'SNo', 'DATE', 'TOTAL', 'PURCHASE', 'OTHER GODOWN', 'TRANSFER', 'HANDLE',
-                                        'WG CHECKING', 'TOTAL', 'SALES TOTAL', 'LORRY SHED', 'VANDI VARUM', 'DD SALES', 'TRANSFER', 'OTHER GODOWN', 'ACTION'
-                                    ].map((o, i) => (
-                                        <td className='border fa-12 text-center' key={i}>{o}</td>
-                                    ))}
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {godownData?.map((o, i) => <RowComp o={o} sno={i + 1} key={i} />)}
-                            </tbody>
-
-                        </table>
-                    </div>
+                    <TabContext value={filter.view}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <TabList
+                                indicatorColor='transparant'
+                                onChange={(e, n) => setFilter(pre => ({ ...pre, view: n }))}
+                                variant="scrollable"
+                                scrollButtons="auto"
+                                allowScrollButtonsMobile
+                            >
+                                <Tab sx={filter.view === 'DATA ENTRY' ? { backgroundColor: '#c6d7eb' } : {}} label={'DATA ENTRY'} value='DATA ENTRY' />
+                                <Tab sx={filter.view === 'ABSTRACT' ? { backgroundColor: '#c6d7eb' } : {}} label="ABSTRACT" value='ABSTRACT' />
+                            </TabList>
+                        </Box>
+                        {['DATA ENTRY', 'ABSTRACT'].map(o => (
+                            <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
+                                {godownData?.length ? dispView(o) : <></>}
+                            </TabPanel>
+                        ))}
+                    </TabContext>
                 </CardContent>
 
             </Card>

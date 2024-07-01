@@ -258,10 +258,9 @@ const DriverActivities = () => {
                             component={Paper}
                             variant='outlined'
                             className="p-3 my-3 "
+                            key={i}
                         >
-                            <div
-                                key={i}
-                            >
+                            <div>
                                 <h6 className='blue-text mb-2 pb-2 d-flex justify-content-between border-bottom fa-20'>
                                     <span>{o?.DriverName}</span>
                                     <span>
@@ -279,6 +278,7 @@ const DriverActivities = () => {
                                         <div
                                             className="d-flex justify-content-between align-items-center m-2 border rounded-3 p-3"
                                             style={{ minWidth: '250px', backgroundColor: '#EAFEFF' }}
+                                            key={ind}
                                         >
                                             <h6 className='fw-bold mb-0 text-muted'>{objKey}</h6>
                                             <h6 className='blue-text mb-0'>
@@ -295,38 +295,6 @@ const DriverActivities = () => {
                                         </div>
                                     ))}
                                 </div>
-
-                                {/* categoryBased */}
-                                {/* <div className="table-responsive rounded-3 overflow-hidden border p-0">
-                                <table className="table m-0">
-                                    <thead>
-                                        <tr>
-                                            <th className='fa-14 text-center border-end border-bottom'>Trip No</th>
-                                            {Object.keys(categoryTotals).map(objKey => (
-                                                <th className='fa-14 text-center  border-end border-bottom' key={objKey}>{objKey}</th>
-                                            ))}
-                                            <th className='fa-14 text-center'>Trip-Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {o?.Trips?.map((trip, tripInd) => (
-                                            <tr key={tripInd}>
-                                                <td className='fa-13 border-end border-bottom'>{trip?.TripNumber}</td>
-                                                {Object.keys(categoryTotals).map(objKey => (
-                                                    <td className='fa-13 border-end border-bottom' key={objKey}>
-                                                        {trip?.Categories?.map((cat, catInd) => (cat?.TripCategory === objKey) && (
-                                                            <p key={catInd} className='mb-0 d-flex justify-content-between'>
-                                                                <span className='text-primary fw-bold'>{cat?.TonnageValue}</span>
-                                                                {cat?.EventTime ? convertToTimeObject(cat?.EventTime) : '-'}
-                                                            </p>
-                                                        ))}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div> */}
 
                                 <div className="table-responsive rounded-3 overflow-hidden border p-0">
                                     <table className="table m-0">
@@ -419,7 +387,13 @@ const DriverActivities = () => {
                 <CardContent >
                     <TabContext value={filter.view}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <TabList indicatorColor='transparant' onChange={(e, n) => setFilter(pre => ({ ...pre, view: n }))} aria-label="">
+                            <TabList
+                                indicatorColor='transparant'
+                                onChange={(e, n) => setFilter(pre => ({ ...pre, view: n }))}
+                                variant="scrollable"
+                                scrollButtons="auto"
+                                allowScrollButtonsMobile
+                            >
                                 <Tab sx={filter.view === 'DATA ENTRY' ? { backgroundColor: '#c6d7eb' } : {}} label={'DATA ENTRY'} value='DATA ENTRY' />
                                 <Tab sx={filter.view === 'ABSTRACT' ? { backgroundColor: '#c6d7eb' } : {}} label="ABSTRACT" value='ABSTRACT' />
                                 <Tab sx={filter.view === 'CATEGORY BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="CATEGORY BASED" value='CATEGORY BASED' />
@@ -427,7 +401,9 @@ const DriverActivities = () => {
                             </TabList>
                         </Box>
                         {['DATA ENTRY', 'ABSTRACT', 'CATEGORY BASED', 'DRIVER BASED'].map(o => (
-                            <TabPanel value={o} sx={{ px: 0, py: 2 }}>{dispView(o)}</TabPanel>
+                            <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
+                                {(activityData.length || driverBased.length) ? dispView(o) : <></>}
+                            </TabPanel>
                         ))}
                     </TabContext>
                 </CardContent>
