@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { convertToTimeObject, createAbbreviation, isEqualNumber, ISOString, NumberFormat, onlynum } from '../../Components/functions';
+import { convertToTimeObject, createAbbreviation, isEqualNumber, ISOString, NumberFormat, onlynum, UTCTime } from '../../Components/functions';
 import api from '../../API';
 import { toast } from 'react-toastify'
 import { Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Tab, Box } from '@mui/material';
@@ -29,7 +29,8 @@ const DriverActivities = () => {
         CreatedBy: storage.UserId,
     }
     const [activityData, setActivityData] = useState([]);
-    const [driverBased, setDriverBased] = useState([])
+    const [driverBased, setDriverBased] = useState([]);
+    const [timeBased, setTimeBased] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [inputValues, setInputValues] = useState(initialValue);
     const [reload, setReload] = useState(false);
@@ -59,6 +60,10 @@ const DriverActivities = () => {
         fetch(`${api}driverActivities/tripBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
             .then(res => res.json())
             .then(data => setDriverBased(data.data))
+            .catch(e => console.error(e))
+        fetch(`${api}driverActivities/timeBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+            .then(res => res.json())
+            .then(data => setTimeBased(data.data))
             .catch(e => console.error(e))
     }, [reload, filter.reqDate, filter.reqLocation])
 
@@ -166,11 +171,18 @@ const DriverActivities = () => {
 
                             <thead>
                                 <tr>
-                                    <th className='fa-14 border'>Driver Name</th>
+                                    <th className='fa-14 border' style={{ backgroundColor: '#EDF0F7' }}>Driver Name</th>
                                     {activityData[0] && activityData[0]?.LocationGroup?.map((o, i) => (
-                                        <th className='fa-14 border text-center' key={i} colSpan={o?.TripDetails?.length}>{o?.TripCategory}</th>
+                                        <th 
+                                            className='fa-14 border text-center' 
+                                            key={i} 
+                                            colSpan={o?.TripDetails?.length}
+                                            style={{ backgroundColor: '#EDF0F7' }}
+                                        >
+                                            {o?.TripCategory}
+                                        </th>
                                     ))}
-                                    <th className='border'></th>
+                                    <th className='border' style={{ backgroundColor: '#EDF0F7' }}></th>
                                 </tr>
                                 <tr>
                                     <th className='border'></th>
@@ -346,6 +358,56 @@ const DriverActivities = () => {
                         </Card>
                     ))
                 )
+            case 'TIME BASED':
+                return (
+                    <>
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        {['Sno', 'Time', 'Driver', 'Tonnage', 'Category', 'Trip-No'].map((o, i) => (
+                                            <th className="fa-14 border text-center" key={i} style={{ backgroundColor: '#EDF0F7' }}>{o}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {timeBased?.map((o, i) => {
+                                        const rows = o?.Trips?.length || 1;
+                                        console.log(o?.EventTime)
+
+                                        return o?.Trips?.map((trip, tripInd) => (
+                                            <tr key={`${trip + '-' + tripInd}`}>
+                                                {tripInd === 0 && (
+                                                    <td
+                                                        className='fa-13 border text-center'
+                                                        rowSpan={rows}
+                                                        style={{ verticalAlign: 'middle' }}
+                                                    >
+                                                        {i + 1}
+                                                    </td>
+                                                )}
+                                                {tripInd === 0 && (
+                                                    <td
+                                                        className='fa-13 border text-center'
+                                                        rowSpan={rows}
+                                                        style={{ verticalAlign: 'middle' }}
+                                                    >
+                                                        {o?.EventTime ? UTCTime(o?.EventTime) : '-'}
+                                                    </td>
+                                                )}
+                                                <td className='fa-13 border text-center'>{trip?.DriverName}</td>
+                                                <td className='fa-13 border text-center blue-text'>{trip?.TonnageValue}</td>
+                                                <td className='fa-13 border text-center'>{trip?.TripCategory}</td>
+                                                <td className='fa-13 border text-center'>{trip?.TripNumber}</td>
+                                            </tr>
+                                        ))
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )
+
             default:
                 return <></>
         }
@@ -398,9 +460,10 @@ const DriverActivities = () => {
                                 <Tab sx={filter.view === 'ABSTRACT' ? { backgroundColor: '#c6d7eb' } : {}} label="ABSTRACT" value='ABSTRACT' />
                                 <Tab sx={filter.view === 'CATEGORY BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="CATEGORY BASED" value='CATEGORY BASED' />
                                 <Tab sx={filter.view === 'DRIVER BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="DRIVER BASED" value='DRIVER BASED' />
+                                <Tab sx={filter.view === 'TIME BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="TIME BASED" value='TIME BASED' />
                             </TabList>
                         </Box>
-                        {['DATA ENTRY', 'ABSTRACT', 'CATEGORY BASED', 'DRIVER BASED'].map(o => (
+                        {['DATA ENTRY', 'ABSTRACT', 'CATEGORY BASED', 'DRIVER BASED', 'TIME BASED'].map(o => (
                             <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
                                 {(activityData.length || driverBased.length) ? dispView(o) : <></>}
                             </TabPanel>
