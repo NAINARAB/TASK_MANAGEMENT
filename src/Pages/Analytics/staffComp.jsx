@@ -43,7 +43,7 @@ const StaffInfo = ({ reqDate, reqLocation }) => {
 
     const overAllTotal = categoryTotal()?.reduce((sum, obj) => {
         let total = 0;
-        total += obj?.Total
+        total += (obj?.Category !== 'OTHERS 1 - PRINT') ? obj?.Total : 0;
         return sum + total
     }, 0)
 

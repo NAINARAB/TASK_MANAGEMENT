@@ -23,11 +23,11 @@ const DeliveryInfo = ({reqDate, reqLocation}) => {
         <>
             <div className="my-2">
                 <div className='cus-grid text-dark'>
-                    <ContCard Value={activityData[0]?.NotDelivery || 0} Label={'Not Delivery'} />
+                    <ContCard Value={activityData[0]?.EntryTime ? UTCTime(activityData[0]?.EntryTime) : '-'} Label={'Time'} />
+                    <ContCard Value={activityData[0]?.OverAllSales || 0} Label={'Sales'} />
                     <ContCard Value={activityData[0]?.NotTaken || 0} Label={'NotTaken'} />
                     <ContCard Value={activityData[0]?.NotVerified || 0} Label={'NotVerified'} />
-                    <ContCard Value={activityData[0]?.OverAllSales || 0} Label={'Sales'} />
-                    <ContCard Value={activityData[0]?.EntryTime ? UTCTime(activityData[0]?.EntryTime) : '-'} Label={'Time'} />
+                    <ContCard Value={activityData[0]?.NotDelivery || 0} Label={'Not Delivery'} />
                 </div>
             </div>
         </>

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../API';
 import CardComp from './numCardComp';
+import { BarChart } from '@mui/x-charts/BarChart';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />
 
-const DriverInfoComp = ({reqDate, reqLocation}) => {
+const DriverInfoComp = ({ reqDate, reqLocation }) => {
     const [activityData, setActivityData] = useState([]);
     const [driverBased, setDriverBased] = useState([]);
 
@@ -60,6 +61,31 @@ const DriverInfoComp = ({reqDate, reqLocation}) => {
                     <ContCard Value={totalTonnageValue} Label={'TOTAL'} />
                     {Object.entries(categoryTotals).map(([objKey, objValue]) => <ContCard key={objKey} Value={objValue} Label={objKey} />)}
                 </div>
+            </div>
+
+            <div className="my-3 d-flex justify-content-center">
+                <BarChart
+                    xAxis={[{ scaleType: 'band', data: driverBased?.map(o => o?.DriverName) }]}
+                    series={[
+                        { data: driverBased?.map(o => o?.Trips?.length), label: 'TRIPS' },
+                        {
+                            data: driverBased?.map(o => Number(o?.Trips?.reduce((sum, obj) => {
+                                let total = 0;
+                                total += obj?.Categories?.reduce((catSum, catObj) => {
+                                    let catTotal = 0;
+                                    catTotal += catObj?.TonnageValue || 0
+                                    return catTotal + catSum
+                                }, 0)
+                                return sum + total
+                            }, 0)).toFixed(2)),
+                            label: 'TONNAGE'
+                        }
+                    ]}
+                    width={900}
+                    height={400}
+                    barLabel="value"
+                    borderRadius={6}
+                />
             </div>
         </>
     )
