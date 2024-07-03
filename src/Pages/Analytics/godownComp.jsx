@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../API';
-import { ISOString, UTCTime } from '../../Components/functions';
+import { UTCTime } from '../../Components/functions';
 import CardComp from './numCardComp';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />
 
 const GodownInfo = ({reqDate, reqLocation}) => {
     const [activityData, setActivityData] = useState([]);
-    const [filter, setFilter] = useState({
-        reqDate: ISOString(),
-        reqLocation: 'MILL',
-    })
 
     useEffect(() => {
-        setFilter({reqDate, reqLocation})
-    }, [reqDate, reqLocation])
-
-    useEffect(() => {
-        fetch(`${api}godownActivities/abstract?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+        fetch(`${api}godownActivities/abstract?reqDate=${reqDate}&reqLocation=${reqLocation}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -25,7 +17,7 @@ const GodownInfo = ({reqDate, reqLocation}) => {
                 }
             })
             .catch(e => console.error(e))
-    }, [filter.reqDate, filter.reqLocation])
+    }, [reqDate, reqLocation])
 
     return (
         <>

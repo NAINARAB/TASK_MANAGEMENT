@@ -1,34 +1,50 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Card, CardContent, IconButton } from '@mui/material';
+import { Card, CardContent, IconButton, Collapse } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { ISOString } from '../../Components/functions';
 import DriverInfoComp from './driverComp';
 import GodownInfo from './godownComp';
 import DeliveryInfo from './deliveryComp';
 import StaffInfo from './staffComp';
+import WeightCheckingComp from './weightCheckingComp';
+import { CiDeliveryTruck } from "react-icons/ci";
+import { BsBox } from "react-icons/bs";
+import { HiOutlineHomeModern } from "react-icons/hi2"
+// import { GrUserWorker } from "react-icons/gr";
+import { HiUsers } from "react-icons/hi";
+import { SlSpeedometer } from "react-icons/sl";
 
 const DataEntryAbstract = () => {
     const [filter, setFilter] = useState({
         reqDate: ISOString(),
         reqLocation: 'MILL',
     });
-    
+
     const [displayContent, setDisplayContent] = useState([
         {
             name: 'Driver Activities',
             isOpen: false,
+            icon: <CiDeliveryTruck style={{ fontSize: '40px' }} />
         },
         {
             name: 'Godown Activities',
             isOpen: false,
+            icon: <HiOutlineHomeModern style={{ fontSize: '40px' }} />
         },
         {
             name: 'Delivery Activities',
             isOpen: false,
+            icon: <BsBox style={{ fontSize: '40px' }} />
         },
         {
             name: 'Staff Activities',
             isOpen: false,
+            icon: <HiUsers style={{ fontSize: '40px' }} />
+        },
+        {
+            name: 'Weight Checking Activities',
+            isOpen: false,
+            icon: <SlSpeedometer style={{ fontSize: '40px' }} />
         },
     ]);
 
@@ -37,6 +53,7 @@ const DataEntryAbstract = () => {
         <GodownInfo reqDate={filter.reqDate} reqLocation={filter.reqLocation} />,
         <DeliveryInfo reqDate={filter.reqDate} reqLocation={filter.reqLocation} />,
         <StaffInfo reqDate={filter.reqDate} reqLocation={filter.reqLocation} />,
+        <WeightCheckingComp reqDate={filter.reqDate} reqLocation={filter.reqLocation} />,
     ], [filter.reqDate, filter.reqLocation]);
 
     useEffect(() => {
@@ -82,16 +99,21 @@ const DataEntryAbstract = () => {
             {displayContent.map((item, index) => (
                 <Card key={index} className='mt-2'>
                     <div
-                        className="px-3 py-2 fa-17 fw-bold border-bottom d-flex justify-content-between align-items-center"
+                        className="fa-17 fw-bold border-bottom p-0 d-flex justify-content-between align-items-center"
                         onClick={() => handleToggle(index)}
                         style={{ cursor: 'pointer' }}
                     >
-                        <span>{item.name}</span>
-                        <IconButton>
+                        <div className='d-flex justify-content-between align-items-center p-0'>
+                            <span className='p-4 bg-primary text-white'>{item.icon}</span>
+                            <span className='ps-3 fa-20'>{item.name}</span>
+                        </div>
+                        <IconButton size='small' className='p-2'>
                             {item.isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                         </IconButton>
                     </div>
-                    {item.isOpen && <CardContent>{item.comp}</CardContent>}
+                    <Collapse in={item.isOpen} unmountOnExit>
+                        <CardContent>{item.comp}</CardContent>
+                    </Collapse>
                 </Card>
             ))}
         </>

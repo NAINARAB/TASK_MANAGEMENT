@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../API';
-import { ISOString, UTCTime } from '../../Components/functions';
 import CardComp from './numCardComp';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />
 
 const StaffInfo = ({ reqDate, reqLocation }) => {
     const [activityData, setActivityData] = useState([]);
-    const [filter, setFilter] = useState({
-        reqDate: ISOString(),
-        reqLocation: 'MILL',
-    })
 
     useEffect(() => {
-        setFilter({ reqDate, reqLocation })
-    }, [reqDate, reqLocation])
-
-    useEffect(() => {
-        fetch(`${api}staffActivities/staffBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+        fetch(`${api}staffActivities/staffBased?reqDate=${reqDate}&reqLocation=${reqLocation}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -25,7 +16,7 @@ const StaffInfo = ({ reqDate, reqLocation }) => {
                 }
             })
             .catch(e => console.error(e))
-    }, [filter.reqDate, filter.reqLocation])
+    }, [reqDate, reqLocation])
 
     const categoryTotal = () => {
         let category = [];

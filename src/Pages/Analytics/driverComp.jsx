@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../API';
-import { ISOString } from '../../Components/functions';
 import CardComp from './numCardComp';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />
@@ -8,17 +7,9 @@ const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />
 const DriverInfoComp = ({reqDate, reqLocation}) => {
     const [activityData, setActivityData] = useState([]);
     const [driverBased, setDriverBased] = useState([]);
-    const [filter, setFilter] = useState({
-        reqDate: ISOString(),
-        reqLocation: 'MILL',
-    })
 
     useEffect(() => {
-        setFilter({reqDate, reqLocation})
-    }, [reqDate, reqLocation])
-
-    useEffect(() => {
-        fetch(`${api}driverActivities?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+        fetch(`${api}driverActivities?reqDate=${reqDate}&reqLocation=${reqLocation}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -26,11 +17,11 @@ const DriverInfoComp = ({reqDate, reqLocation}) => {
                 }
             })
             .catch(e => console.error(e))
-        fetch(`${api}driverActivities/tripBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+        fetch(`${api}driverActivities/tripBased?reqDate=${reqDate}&reqLocation=${reqLocation}`)
             .then(res => res.json())
             .then(data => setDriverBased(data.data))
             .catch(e => console.error(e))
-    }, [filter.reqDate, filter.reqLocation])
+    }, [reqDate, reqLocation])
 
     const calculateCategoryTotals = (data) => {
         const categoryTotals = {};

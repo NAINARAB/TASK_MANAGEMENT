@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, IconButton, Dialog, DialogTitle, DialogContent, Tooltip } from "@mui/material";
 import '../common.css'
-import saleapp from '../../APIsalesApp'
 import Select from "react-select";
 import { customSelectStyles } from "../../Components/tablecolumn";
 
@@ -14,6 +13,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list';
 import ImagePreviewDialog from "../../Components/imagePreview";
+import api from "../../API";
 
 
 const AttendanceReport = () => {
@@ -31,7 +31,7 @@ const AttendanceReport = () => {
     });
 
     useEffect(() => {
-        fetch(`${saleapp}api/myAttendanceHistory?From=${filter?.From}&To=${filter?.To}&UserId=${filter?.UserId}`)
+        fetch(`${api}SaleApp/myAttendanceHistory?From=${filter?.From}&To=${filter?.To}&UserId=${filter?.UserId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -42,7 +42,7 @@ const AttendanceReport = () => {
 
     useEffect(() => {
 
-        fetch(`${saleapp}api/masters/users/salesPerson/dropDown?Company_id=${storage?.Company_id}`)
+        fetch(`${api}SaleApp/salesPersons?Company_id=${2}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
