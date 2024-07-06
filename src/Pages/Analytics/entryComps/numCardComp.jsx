@@ -1,4 +1,4 @@
-import { NumberFormat } from "../../Components/functions"
+import { NumberFormat } from "../../../Components/functions"
 
 const CardComp = ({ Value, Label }) => (
     <div className="grid-card d-flex align-items-center justify-content-center flex-column cus-shadow">

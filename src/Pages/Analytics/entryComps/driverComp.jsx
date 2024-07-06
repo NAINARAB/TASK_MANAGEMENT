@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../API';
+import api from '../../../API';
 import CardComp from './numCardComp';
 import { BarChart } from '@mui/x-charts/BarChart';
+import { getMonth } from '../../../Components/functions';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />
 
 const DriverInfoComp = ({ reqDate, reqLocation }) => {
     const [activityData, setActivityData] = useState([]);
     const [driverBased, setDriverBased] = useState([]);
+    const [filter, setFilter] = useState({
+        currentMonth: getMonth(),
+    });
 
     useEffect(() => {
         fetch(`${api}driverActivities?reqDate=${reqDate}&reqLocation=${reqLocation}`)
@@ -63,11 +67,18 @@ const DriverInfoComp = ({ reqDate, reqLocation }) => {
                 </div>
             </div>
 
-            <div className="my-3 d-flex justify-content-center">
+            <input 
+                type='month'
+                className='cus-inpt w-auto mt-3' 
+                value={filter.currentMonth} 
+                onChange={e => setFilter(pre => ({ ...pre, currentMonth: e.target.value}))} 
+            />
+
+            <div className="my-3 d-flex justify-content-center flex-wrap">
                 <BarChart
                     xAxis={[{ scaleType: 'band', data: driverBased?.map(o => o?.DriverName) }]}
                     series={[
-                        { data: driverBased?.map(o => o?.Trips?.length), label: 'TRIPS' },
+                        { data: driverBased?.map(o => o?.Trips?.length), label: 'TRIPS',  },
                         {
                             data: driverBased?.map(o => Number(o?.Trips?.reduce((sum, obj) => {
                                 let total = 0;
@@ -78,7 +89,7 @@ const DriverInfoComp = ({ reqDate, reqLocation }) => {
                                 }, 0)
                                 return sum + total
                             }, 0)).toFixed(2)),
-                            label: 'TONNAGE'
+                            label: 'TONNAGE', 
                         }
                     ]}
                     width={900}

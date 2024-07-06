@@ -14,6 +14,12 @@ export const LocalTime = (dateObj) => {
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
+export const getMonth = (date) => {
+    const year = (date ? date : new Date()).getFullYear();
+    const month = String((date ? date : new Date()).getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+};
+
 export const TimeDisplay = (dateObj) => {
     const reqTime = new Date(dateObj);
     let hours = reqTime.getHours();
@@ -21,7 +27,7 @@ export const TimeDisplay = (dateObj) => {
     const ampm = hours >= 12 ? 'PM' : 'AM';
 
     hours = hours % 12;
-    hours = hours ? hours : 12; 
+    hours = hours ? hours : 12;
     const minutesStr = minutes < 10 ? '0' + minutes : minutes;
 
     const formattedTime = hours + ':' + minutesStr + ' ' + ampm;
@@ -31,7 +37,7 @@ export const TimeDisplay = (dateObj) => {
 export const extractHHMM = (dateObj) => {
     const reqTime = new Date(dateObj);
     const hours = reqTime.getUTCHours();
-    const minutes = reqTime.getUTCMinutes(); 
+    const minutes = reqTime.getUTCMinutes();
     const hourStr = hours < 10 ? '0' + hours : hours;
     const minutesStr = minutes < 10 ? '0' + minutes : minutes;
 
@@ -280,3 +286,35 @@ export const createAbbreviation = (sentence) => {
 export const isValidObject = (obj) => {
     return Object.keys(obj).length !== 0;
 }
+
+export const numbersRange = [
+    { min: 0, max: 500 },
+    { min: 500, max: 2000 },
+    { min: 2000, max: 5000 },
+    { min: 5000, max: 10000 },
+    { min: 10000, max: 15000 },
+    { min: 15000, max: 20000 },
+    { min: 20000, max: 30000 },
+    { min: 30000, max: 40000 },
+    { min: 40000, max: 50000 },
+    { min: 50000, max: 75000 },
+    { min: 75000, max: 100000 },
+    { min: 100000, max: 150000 },
+    { min: 150000, max: 200000 },
+    { min: 200000, max: 300000 },
+    { min: 300000, max: 400000 },
+    { min: 400000, max: 500000 },
+    { min: 500000, max: 1000000 },
+    { min: 1000000, max: 1500000 },
+    { min: 1500000, max: 2000000 },
+    { min: 2000000, max: 1e15 },
+];
+
+export const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+};

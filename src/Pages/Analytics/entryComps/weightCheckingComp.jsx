@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../API';
+import api from '../../../API';
 import CardComp from './numCardComp';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />

@@ -2,11 +2,13 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, IconButton, Collapse } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { ISOString } from '../../Components/functions';
-import DriverInfoComp from './driverComp';
-import GodownInfo from './godownComp';
-import DeliveryInfo from './deliveryComp';
-import StaffInfo from './staffComp';
-import WeightCheckingComp from './weightCheckingComp';
+
+import DriverInfoComp from './entryComps/driverComp';
+import GodownInfo from './entryComps/godownComp';
+import DeliveryInfo from './entryComps/deliveryComp';
+import StaffInfo from './entryComps/staffComp';
+import WeightCheckingComp from './entryComps/weightCheckingComp';
+
 import { CiDeliveryTruck } from "react-icons/ci";
 import { BsBox } from "react-icons/bs";
 import { HiOutlineHomeModern } from "react-icons/hi2"

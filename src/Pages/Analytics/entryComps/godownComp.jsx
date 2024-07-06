@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import api from '../../API';
-import { UTCTime } from '../../Components/functions';
+import api from '../../../API';
+import { UTCTime } from '../../../Components/functions';
 import CardComp from './numCardComp';
 
 const ContCard = ({ Value, Label }) => <CardComp Value={Value} Label={Label} />

@@ -61,6 +61,7 @@ import StaffActivity from "./Pages/DataEntry/staffActivity";
 import ActivityImagesUpload from "./Pages/DataEntry/fileUploads";
 import WeightCheckActivity from "./Pages/DataEntry/WeightCheckActivity";
 import DataEntryAbstract from "./Pages/Analytics/entryInfo";
+import QPayReports from "./Pages/Analytics/QPayReports";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -195,7 +196,8 @@ function App() {
                   <Route path="/dataEntry/fileUpload" element={<ActivityImagesUpload />} />
                   <Route path="/dataEntry/wgCheck" element={<WeightCheckActivity />} />
 
-                  <Route path="/abstract/todayActiviy" element={<DataEntryAbstract />} />
+                  <Route path="/analytics/todayActiviy" element={<DataEntryAbstract />} />
+                  <Route path="/analytics/qPay" element={<QPayReports />} />
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
                   <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />
