@@ -124,7 +124,7 @@ const QPaySalesBasedComp = ({ dataArray }) => {
                             salesRange?.map((o, i) => (
                                 salesRange[i + 1]
                                     ? '> ' + NumberFormat(o?.max)
-                                    : '< ' + o?.min.toString()
+                                    : '< ' + (o?.min)
                             ))
                     }]}
                     series={[

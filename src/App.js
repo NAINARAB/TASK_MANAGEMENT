@@ -61,7 +61,7 @@ import StaffActivity from "./Pages/DataEntry/staffActivity";
 import ActivityImagesUpload from "./Pages/DataEntry/fileUploads";
 import WeightCheckActivity from "./Pages/DataEntry/WeightCheckActivity";
 import DataEntryAbstract from "./Pages/Analytics/entryInfo";
-import QPayReports from "./Pages/Analytics/QPayReports";
+import QPayReports from "./Pages/Analytics/QPayReports2";
 
 function App() {
   const [login, setLogin] = useState(false);

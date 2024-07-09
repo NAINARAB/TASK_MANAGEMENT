@@ -1,131 +1,79 @@
-// import { useMaterialReactTable } from 'material-react-table';
-import { NumberFormat } from '../../../Components/functions';
+import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination } from '@mui/material';
 
-const QPayListComp = ({ dataArray, brokers, district, owners }) => {
-
+const QPayListComp = ({ dataArray }) => {
     const qPayColumn = [
-        {
-            header: 'Q-Pay Days',
-            accessorKey: 'Q_Pay_Days',
-            sortable: true,
-            size: 150,
-            Cell: ({ cell }) => <p className="text-center m-0 w-100">{NumberFormat(cell.getValue())}</p>,
-            filterVariant: 'range',
-            filterFn: 'between',
-        },
-        {
-            header: 'Ledger Name',
-            accessorKey: 'Ledger_name',
-            sortable: true,
-            size: 270
-        },
-        {
-            header: 'Ref Brokers',
-            accessorKey: 'Ref_Brokers',
-            size: 200,
-            Cell: ({ cell }) => <span className="blue-text text-center w-100">{cell.getValue()}</span>,
-            filterVariant: 'multi-select',
-            filterSelectOptions: brokers,
-        },
-        {
-            header: 'Ref Owners',
-            accessorKey: 'Ref_Owners',
-            sortable: true,
-            size: 170,
-            filterVariant: 'multi-select',
-            filterSelectOptions: owners,
-            Cell: ({ cell }) => <span className="text-center w-100">{cell.getValue()}</span>,
-        },
-        {
-            header: 'Party District',
-            accessorKey: 'Party_District',
-            sortable: true,
-            size: 170,
-            filterVariant: 'multi-select',
-            filterSelectOptions: district,
-            Cell: ({ cell }) => <span className="text-center w-100">{cell.getValue()}</span>,
-        },
-        {
-            header: 'Freq Days',
-            accessorKey: 'Freq_Days',
-            sortable: true,
-            size: 160,
-            Cell: ({ cell }) => <span className="text-center w-100">{cell.getValue()}</span>,
-            // AggregatedCell: ({ cell }) => <div className="blue-text float-end w-100">{parseInt(cell.getValue())}</div>,
-        },
-        {
-            header: 'Sales Count',
-            accessorKey: 'Sales_Count',
-            size: 160,
-            filterVariant: 'range',
-            filterFn: 'between',
-            Cell: ({ cell }) => <span className="text-center w-100">{cell.getValue()}</span>,
-        },
-        {
-            header: 'Sales Amount',
-            accessorKey: 'Sales_Amount',
-            sortable: true,
-            minWidth: '200px',
-            size: 230,
-            Cell: ({ cell }) => Number(cell.getValue())?.toLocaleString('en-IN', {
-                currency: 'INR',
-                style: 'currency'
-            }),
-            filterVariant: 'range',
-            filterFn: 'between',
-        },
+        { header: 'Q-Pay Days', accessorKey: 'Q_Pay_Days' },
+        { header: 'Ledger Name', accessorKey: 'Ledger_name' },
+        { header: 'Ref Brokers', accessorKey: 'Ref_Brokers' },
+        { header: 'Ref Owners', accessorKey: 'Ref_Owners' },
+        { header: 'Party District', accessorKey: 'Party_District' },
+        { header: 'Freq Days', accessorKey: 'Freq_Days' },
+        { header: 'Sales Count', accessorKey: 'Sales_Count' },
+        { header: 'Sales Amount', accessorKey: 'Sales_Amount' },
     ];
 
-    // const table = useMaterialReactTable({
-    //     columns: qPayColumn,
-    //     data: dataArray,
-    //     enableColumnResizing: true,
-    //     enableGrouping: true,
-    //     enableStickyHeader: true,
-    //     enableColumnOrdering: true,
-    //     initialState: {
-    //         density: 'compact',
-    //         pagination: { pageIndex: 0, pageSize: 100 },
-    //         sorting: [{ id: 'Q_Pay_Days' },],
-    //         // showColumnFilters: true
-    //     },
-    //     muiToolbarAlertBannerChipProps: { color: 'primary' },
-    //     muiTableContainerProps: { sx: { maxHeight: '65vh', minHeight: '56vh' } }
-    // })
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const paginatedData = dataArray.slice(startIndex, endIndex);
 
     return (
         <>
-            {/* <MaterialReactTable table={table} /> */}
-            <div className="table-responsive" style={{ maxHeight: '67vh' }}>
-                <table className="table">
-                    <thead>
-                        <tr>
+            <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
+                <Table stickyHeader size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell className='border-end fa-14 text-center tble-hed-stick'>Sno</TableCell>
                             {qPayColumn.map((o, i) => (
-                                <th className='border fa-14 text-center tble-hed-stick' key={i}>{o?.header}</th>
+                                <TableCell className='border-end fa-14 text-center tble-hed-stick' key={i}>{o?.header}</TableCell>
                             ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {dataArray?.map((o, i) => (
-                            <tr key={i}>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {paginatedData?.map((o, i) => (
+                            <TableRow key={i}>
+                                <TableCell className='fa-13 border-end text-center'>{startIndex + i + 1}</TableCell>
                                 {qPayColumn?.map((oo, ii) => (
-                                    <td className={`fa-13 border ${oo.accessorKey === 'Sales_Amount' ? 'text-end' : 'text-center'}`}>
+                                    <TableCell className={`fa-13 border-end ${oo.accessorKey === 'Sales_Amount' ? 'text-end' : 'text-center'}`} key={ii}>
                                         {oo.accessorKey === 'Sales_Amount' ? Number(o[oo.accessorKey])?.toLocaleString('en-IN', {
                                             currency: 'INR',
                                             style: 'currency'
                                         }) : o[oo.accessorKey]}
-                                    </td>
+                                    </TableCell>
                                 ))}
-                            </tr>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <div className="p-2">
+                <TablePagination
+                    component="div"
+                    count={dataArray.length}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    rowsPerPageOptions={[10, 25, 50, 100, 200, 500, dataArray.length]}
+                    labelRowsPerPage="Rows per page"
+                    showFirstButton
+                    showLastButton
+                />
             </div>
         </>
-    )
+    );
+};
 
-}
-
-
-
-export default QPayListComp
+export default QPayListComp;

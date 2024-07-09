@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import api from "../../API";
 import { Card, FormControlLabel, Switch, Tab, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Checkbox, TextField, Autocomplete } from "@mui/material";
-import { Done, FilterAlt, RotateLeft, CheckBoxOutlineBlank, CheckBox } from '@mui/icons-material'
+import { Done, RotateLeft, CheckBoxOutlineBlank, CheckBox } from '@mui/icons-material'
 import QPayListComp from "./QPayComps/qpayList";
 import { TabPanel, TabList, TabContext } from '@mui/lab';
 import QPaySalesBasedComp from "./QPayComps/salesBased";
 import QPayBasedComp from "./QPayComps/qPayBased";
+import FilterableTable from "../../Components/filterableTable";
+
 
 const icon = <CheckBoxOutlineBlank fontSize="small" />;
 const checkedIcon = <CheckBox fontSize="small" />;
-
 
 const QPayReports = () => {
     const [repData, setRepData] = useState([]);
@@ -18,12 +19,12 @@ const QPayReports = () => {
     const [brokers, setBrokers] = useState([]);
     const [owners, setOwners] = useState([]);
     const [showData, setShowData] = useState([]);
-    const tabList = ['LIST', 'Q-PAY BASED', 'SALES VALUE BASED'];
+    const tabList = ['LIST', 'Q-PAY BASED', 'SALES VALUE BASED', 'test'];
     const filterInitialValue = {
         zeros: false,
         company: 2,
         consolidate: 1,
-        view: 'LIST',
+        view: 'test',
         filterDialog: false,
         Q_Pay_Days: {
             min: '',
@@ -102,6 +103,7 @@ const QPayReports = () => {
             case 'LIST': return <QPayListComp dataArray={showData} brokers={brokers} district={district} owners={owners} />
             case 'Q-PAY BASED': return <QPayBasedComp dataArray={showData} />
             case 'SALES VALUE BASED': return <QPaySalesBasedComp dataArray={showData} />
+            case 'test': return <FilterableTable dataArray={showData} />
             default: <></>
         }
     }
@@ -110,6 +112,7 @@ const QPayReports = () => {
         const beforeFilter = [...otherFilter];
 
         const filteredData = beforeFilter.filter(item => {
+
             if (cusFilter.Q_Pay_Days.min !== '' && item?.Q_Pay_Days < cusFilter.Q_Pay_Days.min) {
                 return false;
             }
@@ -173,6 +176,7 @@ const QPayReports = () => {
     return (
         <>
             <Card>
+
                 <div className="d-flex flex-wrap justify-content-between p-2">
                     <span>
                         <FormControlLabel
@@ -208,226 +212,214 @@ const QPayReports = () => {
                         >
                             <RotateLeft color='secondary' />
                         </IconButton>
-                        <IconButton
-                            size="small"
-                            onClick={() => setCusFilter(pre => ({ ...pre, filterDialog: true }))}
-                        >
-                            <FilterAlt color='secondary' />
-                        </IconButton>
                     </span>
                 </div>
 
-                <div className="row px-3">
+                <div className="row flex-md-row-reverse">
 
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Ref Brokers</p>
+                    <div className="col-lg-3 col-md-4">
 
-                        <Autocomplete
-                            multiple
-                            id="checkboxes-tags-demo"
-                            options={brokers}
-                            disableCloseOnSelect
-                            getOptionLabel={option => option}
-                            value={cusFilter?.Ref_Brokers || []}
-                            onChange={(f, e) => setCusFilter(pre => ({ ...pre, Ref_Brokers: e }))}
-                            renderOption={(props, option, { selected }) => (
-                                <li {...props}>
-                                    <Checkbox
-                                        icon={icon}
-                                        checkedIcon={checkedIcon}
-                                        style={{ marginRight: 8 }}
-                                        checked={selected}
-                                    />
-                                    {option}
-                                </li>
-                            )}
-                            className="w-1"
-                            isOptionEqualToValue={(opt, val) => opt === val}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Ref-Brokers" placeholder="Select Ref-Brokers" />
-                            )}
-                        />
-                    </div>
+                        <div className="px-3 mb-2">
+                            <p className="fa-15 mt-2 mb-1 text-muted">Ref Brokers</p>
 
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Ref Owners</p>
+                            <Autocomplete
+                                multiple
+                                id="checkboxes-tags-demo"
+                                options={brokers}
+                                disableCloseOnSelect
+                                getOptionLabel={option => option}
+                                value={cusFilter?.Ref_Brokers || []}
+                                onChange={(f, e) => setCusFilter(pre => ({ ...pre, Ref_Brokers: e }))}
+                                renderOption={(props, option, { selected }) => (
+                                    <li {...props}>
+                                        <Checkbox
+                                            icon={icon}
+                                            checkedIcon={checkedIcon}
+                                            style={{ marginRight: 8 }}
+                                            checked={selected}
+                                        />
+                                        {option}
+                                    </li>
+                                )}
+                                // className="w-1"
+                                isOptionEqualToValue={(opt, val) => opt === val}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Ref-Brokers" placeholder="Select Ref-Brokers" />
+                                )}
+                            />
 
-                        <Autocomplete
-                            multiple
-                            id="checkboxes-tags-demo"
-                            options={owners}
-                            disableCloseOnSelect
-                            getOptionLabel={option => option}
-                            value={cusFilter?.Ref_Owners || []}
-                            onChange={(f, e) => setCusFilter(pre => ({ ...pre, Ref_Owners: e }))}
-                            renderOption={(props, option, { selected }) => (
-                                <li {...props}>
-                                    <Checkbox
-                                        icon={icon}
-                                        checkedIcon={checkedIcon}
-                                        style={{ marginRight: 8 }}
-                                        checked={selected}
-                                    />
-                                    {option}
-                                </li>
-                            )}
-                            className="w-1"
-                            isOptionEqualToValue={(opt, val) => opt === val}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Ref-Owners" placeholder="Select Ref-Owners" />
-                            )}
-                        />
-                    </div>
+                            <p className="fa-15 mt-2 mb-1 text-muted">Ref Owners</p>
 
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Party District</p>
+                            <Autocomplete
+                                multiple
+                                id="checkboxes-tags-demo"
+                                options={owners}
+                                disableCloseOnSelect
+                                getOptionLabel={option => option}
+                                value={cusFilter?.Ref_Owners || []}
+                                onChange={(f, e) => setCusFilter(pre => ({ ...pre, Ref_Owners: e }))}
+                                renderOption={(props, option, { selected }) => (
+                                    <li {...props}>
+                                        <Checkbox
+                                            icon={icon}
+                                            checkedIcon={checkedIcon}
+                                            style={{ marginRight: 8 }}
+                                            checked={selected}
+                                        />
+                                        {option}
+                                    </li>
+                                )}
+                                className="w-1"
+                                isOptionEqualToValue={(opt, val) => opt === val}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Ref-Owners" placeholder="Select Ref-Owners" />
+                                )}
+                            />
 
-                        <Autocomplete
-                            multiple
-                            id="checkboxes-tags-demo"
-                            options={district}
-                            disableCloseOnSelect
-                            getOptionLabel={option => option}
-                            value={cusFilter?.Party_District || []}
-                            onChange={(f, e) => setCusFilter(pre => ({ ...pre, Party_District: e }))}
-                            renderOption={(props, option, { selected }) => (
-                                <li {...props}>
-                                    <Checkbox
-                                        icon={icon}
-                                        checkedIcon={checkedIcon}
-                                        style={{ marginRight: 8 }}
-                                        checked={selected}
-                                    />
-                                    {option}
-                                </li>
-                            )}
-                            className="w-1"
-                            isOptionEqualToValue={(opt, val) => opt === val}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Party-District" placeholder="Select Party-District" />
-                            )}
-                        />
-                    </div>
+                            <p className="fa-15 mt-2 mb-1 text-muted">Party District</p>
 
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Q-Pay Days</p>
+                            <Autocomplete
+                                multiple
+                                id="checkboxes-tags-demo"
+                                options={district}
+                                disableCloseOnSelect
+                                getOptionLabel={option => option}
+                                value={cusFilter?.Party_District || []}
+                                onChange={(f, e) => setCusFilter(pre => ({ ...pre, Party_District: e }))}
+                                renderOption={(props, option, { selected }) => (
+                                    <li {...props}>
+                                        <Checkbox
+                                            icon={icon}
+                                            checkedIcon={checkedIcon}
+                                            style={{ marginRight: 8 }}
+                                            checked={selected}
+                                        />
+                                        {option}
+                                    </li>
+                                )}
+                                className="w-1"
+                                isOptionEqualToValue={(opt, val) => opt === val}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Party-District" placeholder="Select Party-District" />
+                                )}
+                            />
 
-                        <input
-                            className="cus-inpt"
-                            value={cusFilter?.Ledger_name}
-                            onChange={e => setCusFilter(pre => ({ ...pre, Ledger_name: e.target.value }))}
-                            placeholder="Search Ledger-Name"
-                        />
-                    </div>
-
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Q-Pay Days</p>
-                        <div className="d-flex">
+                            <p className="fa-15 mt-2 mb-1 text-muted">Q-Pay Days</p>
 
                             <input
-                                type="number"
-                                value={cusFilter?.Q_Pay_Days?.min}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Q_Pay_Days: { ...pre.Q_Pay_Days, min: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Min"
+                                className="cus-inpt"
+                                value={cusFilter?.Ledger_name}
+                                onChange={e => setCusFilter(pre => ({ ...pre, Ledger_name: e.target.value }))}
+                                placeholder="Search Ledger-Name"
                             />
-                            <input
-                                type="number"
-                                value={cusFilter?.Q_Pay_Days?.max}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Q_Pay_Days: { ...pre.Q_Pay_Days, max: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Max"
-                            />
+
+                            <p className="fa-15 mt-2 mb-1 text-muted">Q-Pay Days</p>
+                            <div className="d-flex">
+
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Q_Pay_Days?.min}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Q_Pay_Days: { ...pre.Q_Pay_Days, min: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Min"
+                                />
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Q_Pay_Days?.max}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Q_Pay_Days: { ...pre.Q_Pay_Days, max: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Max"
+                                />
+                            </div>
+
+                            <p className="fa-15 mt-2 mb-1 text-muted">Frequency Days</p>
+                            <div className="d-flex">
+
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Freq_Days?.min}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Freq_Days: { ...pre.Freq_Days, min: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Min"
+                                />
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Freq_Days?.max}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Freq_Days: { ...pre.Freq_Days, max: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Max"
+                                />
+                            </div>
+
+                            <p className="fa-15 mt-2 mb-1 text-muted">Sales Count</p>
+                            <div className="d-flex">
+
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Sales_Count?.min}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Sales_Count: { ...pre.Sales_Count, min: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Min"
+                                />
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Sales_Count?.max}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Sales_Count: { ...pre.Sales_Count, max: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Max"
+                                />
+                            </div>
+
+
+                            <p className="fa-15 mt-2 mb-1 text-muted">Sales Amount</p>
+                            <div className="d-flex">
+
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Sales_Amount?.min}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Sales_Amount: { ...pre.Sales_Amount, min: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Min"
+                                />
+                                <input
+                                    type="number"
+                                    value={cusFilter?.Sales_Amount?.max}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, Sales_Amount: { ...pre.Sales_Amount, max: e.target.value } }))}
+                                    className="bg-light border-0 m-1 p-1 w-50"
+                                    placeholder="Max"
+                                />
+                            </div>
+
                         </div>
                     </div>
 
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Frequency Days</p>
-                        <div className="d-flex">
-
-                            <input
-                                type="number"
-                                value={cusFilter?.Freq_Days?.min}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Freq_Days: { ...pre.Freq_Days, min: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Min"
-                            />
-                            <input
-                                type="number"
-                                value={cusFilter?.Freq_Days?.max}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Freq_Days: { ...pre.Freq_Days, max: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Max"
-                            />
+                    <div className="col-lg-9 col-md-8">
+                        <div className="p-2">
+                            <TabContext value={cusFilter.view}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                    <TabList
+                                        indicatorColor='transparant'
+                                        onChange={(e, n) => setCusFilter(pre => ({ ...pre, view: n }))}
+                                        variant="scrollable"
+                                        scrollButtons="auto"
+                                        allowScrollButtonsMobile
+                                    >
+                                        {tabList.map(o => (
+                                            <Tab sx={cusFilter.view === o ? { backgroundColor: '#c6d7eb' } : {}} label={o} value={o} key={o} />
+                                        ))}
+                                    </TabList>
+                                </Box>
+                                {tabList.map(o => (
+                                    <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
+                                        {dispTab(cusFilter.view)}
+                                    </TabPanel>
+                                ))}
+                            </TabContext>
                         </div>
                     </div>
 
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Sales Count</p>
-                        <div className="d-flex">
-
-                            <input
-                                type="number"
-                                value={cusFilter?.Sales_Count?.min}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Sales_Count: { ...pre.Sales_Count, min: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Min"
-                            />
-                            <input
-                                type="number"
-                                value={cusFilter?.Sales_Count?.max}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Sales_Count: { ...pre.Sales_Count, max: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Max"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="col-xxl-3 col-lg-4 col-s-6 col-12 p-2">
-                        <p className="fa-15 mb-2">Sales Amount</p>
-                        <div className="d-flex">
-
-                            <input
-                                type="number"
-                                value={cusFilter?.Sales_Amount?.min}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Sales_Amount: { ...pre.Sales_Amount, min: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Min"
-                            />
-                            <input
-                                type="number"
-                                value={cusFilter?.Sales_Amount?.max}
-                                onChange={e => setCusFilter(pre => ({ ...pre, Sales_Amount: { ...pre.Sales_Amount, max: e.target.value } }))}
-                                className="bg-light border-0 m-1 p-1 w-50"
-                                placeholder="Max"
-                            />
-                        </div>
-                    </div>
 
                 </div>
-
-                <br />
-
-                <TabContext value={cusFilter.view}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <TabList
-                            indicatorColor='transparant'
-                            onChange={(e, n) => setCusFilter(pre => ({ ...pre, view: n }))}
-                            variant="scrollable"
-                            scrollButtons="auto"
-                            allowScrollButtonsMobile
-                        >
-                            {tabList.map(o => (
-                                <Tab sx={cusFilter.view === o ? { backgroundColor: '#c6d7eb' } : {}} label={o} value={o} key={o} />
-                            ))}
-                        </TabList>
-                    </Box>
-                    {tabList.map(o => (
-                        <TabPanel value={o} sx={{ px: 0, py: 0 }} key={o}>
-                            {dispTab(cusFilter.view)}
-                        </TabPanel>
-                    ))}
-                </TabContext>
 
             </Card>
 

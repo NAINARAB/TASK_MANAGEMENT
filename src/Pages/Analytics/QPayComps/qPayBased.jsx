@@ -67,7 +67,7 @@ const QPayBasedComp = ({ dataArray }) => {
 
     return (
         <>
-            <div className="d-flex justify-content-around align-items-center flex-wrap-reverse px-3 py-2">
+            <div className="d-flex justify-content-around align-items-center flex-wrap px-3 py-2">
 
                 <div className="table-responsive">
                     <table className="table">
