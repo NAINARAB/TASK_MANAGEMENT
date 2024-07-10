@@ -1,28 +1,14 @@
 import { useState, useEffect } from 'react';
 import api from '../../../API';
-import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, FormControlLabel, Card, Paper, TextField } from "@mui/material";
+import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Switch, Card, Paper } from "@mui/material";
 import { RotateLeft, Settings } from '@mui/icons-material';
 import { toast } from "react-toastify";
 
 
-const QPayColumnVisiblitySettings = ({ CompanyId }) => {
-    const [columns, setColumns] = useState([]);
+const QPayColumnVisiblitySettings = ({ CompanyId, refresh, columns }) => {
     const [modifiedColumns, setModifiedColumns] = useState([]);
-    const [reload, setReload] = useState(false);
     const [reset, setReset] = useState(false);
     const [dialog, setDialog] = useState(false);
-
-    useEffect(() => {
-        fetch(`${api}TallyReports/qpay/columnVisiblity?CompanyId=${CompanyId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    data?.data?.sort((a, b) => a?.Field_Name?.localeCompare(b?.Field_Name) );
-                    setColumns(data.data)
-                }
-            })
-            .catch(e => console.error(e))
-    }, [CompanyId, reload])
 
     useEffect(() => {
         setModifiedColumns([...columns])
@@ -51,7 +37,9 @@ const QPayColumnVisiblitySettings = ({ CompanyId }) => {
             })
             .catch(e => console.error(e))
             .finally(() => {
-                setReload(pre => !pre)
+                if (refresh) {
+                    refresh()
+                }
             })
     }
 

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Table, TableBody, TableContainer, TableRow, Paper, TablePagination} from '@mui/material';
+import { Table, TableBody, TableContainer, TableRow, Paper, TablePagination, TableHead, TableCell } from '@mui/material';
+import { isEqualNumber, LocalDate, NumberFormat } from './functions';
 
 const FilterableTable = ({ dataArray, columns }) => {
-    
+
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -19,23 +20,51 @@ const FilterableTable = ({ dataArray, columns }) => {
     const endIndex = startIndex + rowsPerPage;
     const paginatedData = dataArray.slice(startIndex, endIndex);
 
+    const formatString = (val, dataType) => {
+        switch (dataType) {
+            case 'number': 
+                return NumberFormat(val)
+            case 'date':
+                return LocalDate(val);
+            case 'string':
+                return val;
+            default: 
+                return ''
+        }
+    }
+
     return (
         <div>
             <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
                 <Table stickyHeader size="small">
-                    {/* <TableHead>
+                    <TableHead>
                         <TableRow>
-                            {columns.map(column => (
-                                <TableCell key={column}>{column}</TableCell>
+                            {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
+                                <TableCell key={ke} className='fa-14 fw-bold text-muted border-end border-top'>
+                                    {column?.Field_Name?.replace(/_/g, ' ')}
+                                </TableCell>
                             ))}
                         </TableRow>
-                    </TableHead> */}
+                    </TableHead>
                     <TableBody>
                         {paginatedData.map((row, index) => (
                             <TableRow key={index}>
-                                {/* {columns.map(column => (
-                                    <TableCell key={column}>{row[column]}</TableCell>
-                                ))} */}
+                                {columns.map(column => (
+                                    Object.entries(row).map(([key, value]) => (
+                                        (
+                                            (column.Field_Name === key)
+                                            &&
+                                            (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1))
+                                        ) && (
+                                            <TableCell 
+                                                key={column + index}
+                                                className='fa-13 border-end'
+                                            >
+                                                {formatString(value, column?.Fied_Data)}
+                                            </TableCell>
+                                        )
+                                    ))
+                                ))}
                             </TableRow>
                         ))}
                     </TableBody>
@@ -49,7 +78,7 @@ const FilterableTable = ({ dataArray, columns }) => {
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    rowsPerPageOptions={[10, 25, 50, 100, 200, 500, dataArray.length]}
+                    rowsPerPageOptions={[20, 50, 100, 200, 500, dataArray.length]}
                     labelRowsPerPage="Rows per page"
                     showFirstButton
                     showLastButton
