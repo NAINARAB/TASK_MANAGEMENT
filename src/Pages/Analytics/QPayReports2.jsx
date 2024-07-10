@@ -19,7 +19,7 @@ const QPayReports = () => {
         zeros: false,
         company: 2,
         consolidate: 1,
-        view: 'LIST',
+        view: 'Q-PAY BASED',
         filterDialog: false
     }
 
@@ -78,7 +78,7 @@ const QPayReports = () => {
         switch (val) {
             // case 'LIST': return <QPayListComp dataArray={filteredData} />
             case 'LIST': return <FilterableTable dataArray={filteredData} columns={sortedColumns} />
-            case 'Q-PAY BASED': return <QPayBasedComp dataArray={filteredData} />
+            case 'Q-PAY BASED': return <QPayBasedComp dataArray={filteredData} columns={sortedColumns} filters={filters} />
             case 'SALES VALUE BASED': return <QPaySalesBasedComp dataArray={filteredData} />
             default: <></>
         }
@@ -287,7 +287,6 @@ const QPayReports = () => {
                             </TabContext>
                         </div>
                     </div>
-
 
                 </div>
 

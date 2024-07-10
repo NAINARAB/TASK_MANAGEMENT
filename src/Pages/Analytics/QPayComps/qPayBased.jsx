@@ -4,9 +4,20 @@ import { getRandomColor, NumberFormat } from "../../../Components/functions";
 import { Button } from "@mui/material";
 
 
-const QPayBasedComp = ({ dataArray }) => {
+const QPayBasedComp = ({ dataArray, columns, filters }) => {
     const [qPayRange, setQPayRange] = useState([]);
-    const [reload, setReload] = useState(false)
+    const [reload, setReload] = useState(false);
+    const [filtered, setFiltered] = useState([])
+    const [localState, setLocalState] = useState({
+        group: '',
+    })
+    const comStr = (str) => str ? (str.trim()).toLowerCase() : '';
+
+    useEffect(() => {
+        const filteredList = Array.isArray(filters[localState.group]) ? filters[localState.group] : []
+        setFiltered(filteredList)
+    }, [filters, localState.group])
+
 
     useEffect(() => {
 
@@ -67,95 +78,155 @@ const QPayBasedComp = ({ dataArray }) => {
 
     return (
         <>
-            <div className="d-flex justify-content-around align-items-center flex-wrap px-3 py-2">
+            <div>
+                <select
+                    className="cus-inpt w-auto border"
+                    value={localState.group}
+                    onChange={e => setLocalState(pre => ({ ...pre, group: e.target.value }))}
+                >
+                    <option value="">Select Group By</option>
+                    {columns?.map((o, i) => o?.Fied_Data === 'string' && (
+                        <option value={o?.Field_Name} key={i}>{o?.Field_Name?.replace(/_/g, ' ')}</option>
+                    ))}
+                </select>
+            </div>
 
-                <div className="table-responsive">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                {['Sno', 'Day-Range', 'Parties', 'Percentage', 'Sales Count (Avg)', 'Frequency Days (Avg)'].map(o => (
-                                    <th className="border fa-14" style={{ backgroundColor: '#EDF0F7' }} key={o}>{o}</th>
+            {(localState.group === '' || filtered.length === 0) ? (
+                <div className="d-flex justify-content-around align-items-center flex-wrap px-3 py-2">
+
+                    <div className="table-responsive">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    {['Sno', 'Day-Range', 'Parties', 'Percentage'].map(o => (
+                                        <th className="border fa-15" style={{ backgroundColor: '#EDF0F7' }} key={o}>{o}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {qPayRange.map((o, i) => (
+                                    <tr key={i}>
+                                        <td className="fa-15 border text-center">{i + 1}</td>
+                                        <td className="fa-15 border text-center">
+                                            {
+                                                qPayRange[i + 1]
+                                                    ? ((o?.min + 1)?.toString() + ' - ' + o?.max?.toString())
+                                                    : '< ' + o?.min.toString()
+                                            }
+                                        </td>
+                                        <td className="fa-15 border text-center">{o?.data?.length}</td>
+                                        <td className="fa-15 border text-center">{NumberFormat((o?.data?.length / dataArray?.length) * 100)}</td>
+                                    </tr>
                                 ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {qPayRange.map((o, i) => (
-                                <tr key={i}>
-                                    <td className="fa-13 border text-center">{i + 1}</td>
+                                <tr>
+                                    <td className="border"></td>
+                                    <td className="border"></td>
                                     <td className="fa-13 border text-center">
-                                        {
-                                            qPayRange[i + 1]
-                                                ? ((o?.min + 1)?.toString() + ' - ' + o?.max?.toString())
-                                                : '< ' + o?.min.toString()
-                                        }
-                                    </td>
-                                    <td className="fa-13 border text-center">{o?.data?.length}</td>
-                                    <td className="fa-13 border text-center">{NumberFormat((o?.data?.length / dataArray?.length) * 100)}</td>
-                                    <td className="fa-13 border text-center">
-                                        {(o.data.length === 0) ? 0 : ((o?.data?.reduce((sum, item) => sum + item.Sales_Count || 0, 0)) / o.data.length).toFixed(2)}
+                                        {NumberFormat(qPayRange?.reduce((sum, o) => {
+                                            return sum += o?.data?.length
+                                        }, 0))}
                                     </td>
                                     <td className="fa-13 border text-center">
-                                        {(o.data.length === 0) ? 0 : ((o?.data?.reduce((sum, item) => sum + item.Freq_Days || 0, 0)) / o.data.length).toFixed(2)}
+                                        {NumberFormat(qPayRange?.reduce((sum, o) => {
+                                            return sum += ((o?.data?.length / dataArray?.length) * 100)
+                                        }, 0))}
                                     </td>
                                 </tr>
-                            ))}
-                            <tr>
-                                <td className="border"></td>
-                                <td className="border"></td>
-                                <td className="fa-13 border text-center">
-                                    {NumberFormat(qPayRange?.reduce((sum, o) => {
-                                        return sum += o?.data?.length
-                                    }, 0))}
-                                </td>
-                                <td className="fa-13 border text-center">
-                                    {NumberFormat(qPayRange?.reduce((sum, o) => {
-                                        return sum += ((o?.data?.length / dataArray?.length) * 100)
-                                    }, 0))}%
-                                </td>
-                                <td className="fa-13 border text-center">
-                                    {NumberFormat((dataArray?.length / (dataArray?.reduce((sum, o) => {
-                                        return sum += Number(o?.Sales_Count) || 0
-                                    }, 0))) * 100)}
-                                    {/* {dataArray?.reduce((sum, o) => {
-                                        return sum += Number(o?.Sales_Count) || 0
-                                    }, 0)}   */}
-                                </td>
-                                <td className="fa-13 border text-center">
-                                    {NumberFormat((dataArray?.length / (dataArray?.reduce((sum, o) => {
-                                        return sum += Number(o?.Freq_Days) || 0
-                                    }, 0))) * 100)}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="d-flex align-items-center flex-column overflow-scroll">
+                        <h5>Q-Pay Days</h5>
+                        <PieChart
+                            series={[
+                                {
+                                    data: qPayRange?.map((range, rangeInd) => ({
+                                        label: qPayRange[rangeInd + 1]
+                                            ? (NumberFormat(range?.min) + '-' + NumberFormat(range?.max)) + '(' + range?.data?.length + ')'
+                                            : '< ' + NumberFormat(range?.min) + '(' + range?.data?.length + ')',
+                                        // value: range?.data?.length,
+                                        value: ((range?.data?.length / dataArray?.length) * 100).toFixed(2),
+                                        color: getRandomColor()
+                                    })),
+                                    arcLabel: (item) => `${item.label}`,
+                                    arcLabelMinAngle: 35,
+                                }
+                            ]}
+                            width={570}
+                            height={400}
+                            title="QPay Days"
+                        />
+
+                        <Button onClick={() => setReload(pre => !pre)}>Change color</Button>
+                    </div>
+
                 </div>
-
-                <div className="d-flex align-items-center flex-column overflow-auto">
-                    <h5>Q-Pay Days</h5>
-                    <PieChart
-                        series={[
-                            {
-                                data: qPayRange?.map((range, rangeInd) => ({
-                                    label: qPayRange[rangeInd + 1]
-                                        ? (NumberFormat(range?.min) + '-' + NumberFormat(range?.max)) + '(' + range?.data?.length + ')'
-                                        : '< ' + NumberFormat(range?.min) + '(' + range?.data?.length + ')',
-                                    // value: range?.data?.length,
-                                    value: ((range?.data?.length / dataArray?.length) * 100).toFixed(2),
-                                    color: getRandomColor()
-                                })),
-                                arcLabel: (item) => `${item.label}`,
-                                arcLabelMinAngle: 35,
-                            }
-                        ]}
-                        width={650}
-                        height={400}
-                        title="QPay Days"
-                    />
-
-                    <Button onClick={() => setReload(pre => !pre)}>Change color</Button>
-                </div>
-
-            </div>
+            ) : (
+                <>
+                    <div className="cus-grid mt-3">
+                        {filtered.map((group, groupIndex) => (
+                            <div className="table-responsive grid-card bg-white border" key={groupIndex}>
+                                <h6 className="fw-bold text-muted d-flex justify-content-between">
+                                    {String(group)?.toUpperCase()}
+                                    <span>
+                                        {NumberFormat(qPayRange?.reduce((overall, o) => {
+                                            return overall += o?.data?.reduce((sum, obj) => {
+                                                return (comStr(obj[localState.group]) === comStr(group))
+                                                    ? sum + 1
+                                                    : sum
+                                            }, 0)
+                                        }, 0))}
+                                    </span>
+                                </h6>
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            {['Sno', 'Day-Range', 'Parties', 'Percentage'].map(o => (
+                                                <th className="border fa-14" style={{ backgroundColor: '#EDF0F7' }} key={o}>{o}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {qPayRange.map((o, i) => (
+                                            <tr key={i}>
+                                                <td className="fa-15 border text-center">{i + 1}</td>
+                                                <td className="fa-15 border text-center">
+                                                    {
+                                                        qPayRange[i + 1]
+                                                            ? ((o?.min + 1)?.toString() + ' - ' + o?.max?.toString())
+                                                            : '< ' + o?.min.toString()
+                                                    }
+                                                </td>
+                                                <td className="fa-15 border text-center">
+                                                    {o?.data?.reduce((sum, obj) => {
+                                                        return (comStr(obj[localState.group]) === comStr(group))
+                                                            ? sum + 1
+                                                            : sum
+                                                    }, 0)}
+                                                </td>
+                                                <td className="fa-15 border text-center">
+                                                    {NumberFormat((o?.data?.reduce((sum, obj) => {
+                                                        return (comStr(obj[localState.group]) === comStr(group))
+                                                            ? sum + 1
+                                                            : sum
+                                                    }, 0) / qPayRange?.reduce((overall, o) => {
+                                                        return overall += o?.data?.reduce((sum, obj) => {
+                                                            return (comStr(obj[localState.group]) === comStr(group))
+                                                                ? sum + 1
+                                                                : sum
+                                                        }, 0)
+                                                    }, 0)) * 100)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
         </>
     )
 }
