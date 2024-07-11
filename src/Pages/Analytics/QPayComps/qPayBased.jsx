@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
 import { PieChart } from '@mui/x-charts/PieChart';
 import { getRandomColor, NumberFormat } from "../../../Components/functions";
-import { Button } from "@mui/material";
+import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
+import { CheckBox, CheckBoxOutlineBlank } from "@mui/icons-material";
 
+const icon = <CheckBoxOutlineBlank fontSize="small" />;
+const checkedIcon = <CheckBox fontSize="small" />;
 
 const QPayBasedComp = ({ dataArray, columns, filters }) => {
     const [qPayRange, setQPayRange] = useState([]);
     const [reload, setReload] = useState(false);
     const [filtered, setFiltered] = useState([])
     const [localState, setLocalState] = useState({
-        group: '',
+        group: JSON.parse(localStorage.getItem('qPayGroup')) || '',
     })
+
     const comStr = (str) => str ? (str.trim()).toLowerCase() : '';
 
     useEffect(() => {
@@ -76,19 +80,48 @@ const QPayBasedComp = ({ dataArray, columns, filters }) => {
 
     }, [dataArray, reload])
 
+    const onChangeGroup = (val) => {
+        setLocalState(pre => ({ ...pre, group: val.target.value }))
+        localStorage.setItem('qPayGroup', val.target.value)
+    }
+
+
     return (
         <>
-            <div>
+            <div className="col-xxl-3 col-lg-4 col-md-6 col-sm-8">
                 <select
                     className="cus-inpt w-auto border"
                     value={localState.group}
-                    onChange={e => setLocalState(pre => ({ ...pre, group: e.target.value }))}
+                    onChange={onChangeGroup}
                 >
                     <option value="">Select Group By</option>
                     {columns?.map((o, i) => o?.Fied_Data === 'string' && (
                         <option value={o?.Field_Name} key={i}>{o?.Field_Name?.replace(/_/g, ' ')}</option>
                     ))}
                 </select>
+                {/* <Autocomplete
+                    multiple
+                    options={columns}
+                    disableCloseOnSelect
+                    getOptionLabel={option => option?.Fied_Data === 'string' && option?.Field_Name}
+                    value={localState.group || []}
+                    onChange={(event, newValue) => onChangeGroup(newValue)}
+                    renderOption={(props, option, { selected }) => option?.Fied_Data === 'string' && (
+                        <li {...props}>
+                            <Checkbox
+                                icon={icon}
+                                checkedIcon={checkedIcon}
+                                style={{ marginRight: 8 }}
+                                checked={selected}
+                            />
+                            {option?.Field_Name}
+                        </li>
+                    )}
+                    isOptionEqualToValue={(opt, val) => opt?.Field_Name === val?.Field_Name}
+                    renderInput={(params) => (
+                        <TextField {...params} label={'Add Grouping'} placeholder={`Select column for Grouping`} />
+                    )}
+                /> */}
             </div>
 
             {(localState.group === '' || filtered.length === 0) ? (

@@ -8,6 +8,7 @@ import QPayBasedComp from "./QPayComps/qPayBased";
 import FilterableTable from "../../Components/filterableTable";
 import QPayColumnVisiblitySettings from "./QPayComps/settings";
 import { isEqualNumber } from "../../Components/functions";
+import QPayGroupingList from './QPayComps/qpayGroupingList'
 
 const icon = <CheckBoxOutlineBlank fontSize="small" />;
 const checkedIcon = <CheckBox fontSize="small" />;
@@ -19,8 +20,9 @@ const QPayReports = () => {
         zeros: false,
         company: 2,
         consolidate: 1,
-        view: 'Q-PAY BASED',
-        filterDialog: false
+        view: 'LIST',
+        filterDialog: false,
+        displayGrouping: false,
     }
 
     const [repData, setRepData] = useState([]);
@@ -29,11 +31,15 @@ const QPayReports = () => {
 
     const [cusFilter, setCusFilter] = useState(filterInitialValue);
     const [columns, setColumns] = useState([]);
+    const [sortedColumns, setSortedColumns] = useState([])
 
     const [filters, setFilters] = useState({});
     const [filteredData, setFilteredData] = useState(showData);
 
-    const sortedColumns = columns?.sort((a, b) => (a?.OrderBy && b?.OrderBy) ? a?.OrderBy - b?.OrderBy : b?.OrderBy - a?.OrderBy)
+
+    useEffect(() => {
+        setSortedColumns(columns?.sort((a, b) => (a?.OrderBy && b?.OrderBy) ? a?.OrderBy - b?.OrderBy : b?.OrderBy - a?.OrderBy))
+    }, [columns])
 
     useEffect(() => {
         setRepData([])
@@ -52,11 +58,7 @@ const QPayReports = () => {
         const zerosIncluded = !cusFilter.zeros ? temp.filter(o => o?.Q_Pay_Days) : temp;
 
         setShowData(zerosIncluded);
-    }, [repData, cusFilter.zeros, cusFilter.consolidate, cusFilter.company]);
-
-    useEffect(() => {
-        applyFilters();
-    }, [filters, showData, reload]);
+    }, [repData, cusFilter.zeros]);
 
     useEffect(() => {
         fetch(`${api}TallyReports/qpay/columnVisiblity?CompanyId=${cusFilter.company}`)
@@ -68,20 +70,26 @@ const QPayReports = () => {
                 }
             })
             .catch(e => console.error(e))
-    }, [cusFilter.company, showData])
+    }, [cusFilter.company, reload])
+
+    useEffect(() => {
+        applyFilters();
+    }, [filters]);
+
+    const dispTab = (val) => {
+        const filterCount = Object.keys(filters).length;
+        const dataArray = (filterCount > 0) ? filteredData : showData;
+        switch (val) {
+            // case 'LIST': return <QPayListComp dataArray={filteredData} />
+            case 'LIST': return <FilterableTable dataArray={dataArray} columns={sortedColumns} />
+            case 'Q-PAY BASED': return <QPayBasedComp dataArray={dataArray} columns={sortedColumns} filters={filters} />
+            case 'SALES VALUE BASED': return <QPaySalesBasedComp dataArray={dataArray} />
+            default: <></>
+        }
+    }
 
     const reloadData = () => {
         setReload(pre => !pre)
-    }
-
-    const dispTab = (val) => {
-        switch (val) {
-            // case 'LIST': return <QPayListComp dataArray={filteredData} />
-            case 'LIST': return <FilterableTable dataArray={filteredData} columns={sortedColumns} />
-            case 'Q-PAY BASED': return <QPayBasedComp dataArray={filteredData} columns={sortedColumns} filters={filters} />
-            case 'SALES VALUE BASED': return <QPaySalesBasedComp dataArray={filteredData} />
-            default: <></>
-        }
     }
 
     const handleFilterChange = (column, value) => {
@@ -92,8 +100,8 @@ const QPayReports = () => {
     };
 
     const applyFilters = () => {
-        let filtered = showData;
-        for (const column of columns) {
+        let filtered = [...showData];
+        for (const column of sortedColumns) {
             if (filters[column.Field_Name]) {
                 if (filters[column.Field_Name].type === 'range') {
                     const { min, max } = filters[column.Field_Name];
@@ -179,41 +187,16 @@ const QPayReports = () => {
                     )}
                     isOptionEqualToValue={(opt, val) => opt === val}
                     renderInput={(params) => (
-                        <TextField 
-                            {...params} 
-                            label={Field_Name} 
-                            placeholder={`Select ${Field_Name?.replace(/_/g, ' ')}`} 
+                        <TextField
+                            {...params}
+                            label={Field_Name}
+                            placeholder={`Select ${Field_Name?.replace(/_/g, ' ')}`}
                         />
                     )}
                 />
             );
         }
     };
-
-    const Filters = () => (
-        <>
-            <h5 className="d-flex justify-content-between px-2">
-                Filters
-                <Tooltip title='Clear Filters'>
-                    <IconButton
-                        size="small"
-                        onClick={() => setFilters({})}
-                    >
-                        <FilterAltOff />
-                    </IconButton>
-                </Tooltip>
-            </h5>
-            <div className="border rounded-3 " style={{ maxHeight: '70vh', overflow: 'auto' }}>
-                {sortedColumns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
-                    <div key={ke} className="py-3 px-3 hov-bg border-bottom">
-                        <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
-                        {renderFilter(column)}
-                    </div>
-                ))}
-                <br />
-            </div>
-        </>
-    )
 
     return (
         <>
@@ -243,52 +226,84 @@ const QPayReports = () => {
                             labelPlacement="start"
                             className=" fw-bold text-primary"
                         />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={cusFilter.displayGrouping}
+                                    onChange={e => setCusFilter(pre => ({ ...pre, displayGrouping: e.target.checked }))}
+                                />
+                            }
+                            label="Grouping"
+                            labelPlacement="start"
+                            className=" fw-bold text-primary"
+                        />
                     </span>
 
                     <span>
-                        <QPayColumnVisiblitySettings CompanyId={cusFilter.company} columns={columns} refresh={reloadData} />
+                        <QPayColumnVisiblitySettings CompanyId={cusFilter.company} columns={sortedColumns} refresh={reloadData} />
                         <IconButton
                             onClick={() => setCusFilter(pre => ({ ...pre, filterDialog: true }))}
                             size="small"
-                            className="d-md-none d-block"
+                            className="d-md-none d-inline"
                         >
                             <FilterAlt />
                         </IconButton>
                     </span>
                 </div>
 
-                <div className="row flex-md-row-reverse">
+                {cusFilter.displayGrouping ? <QPayGroupingList dataArray={showData} columns={sortedColumns} /> : (
+                    <div className="row flex-md-row-reverse">
 
-                    <div className="col-lg-3 col-md-4 d-none d-md-block">
-                        <Filters />
-                    </div>
-
-                    <div className="col-lg-9 col-md-8">
-                        <div className="p-2">
-                            <TabContext value={cusFilter.view}>
-                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList
-                                        indicatorColor='transparant'
-                                        onChange={(e, n) => setCusFilter(pre => ({ ...pre, view: n }))}
-                                        variant="scrollable"
-                                        scrollButtons="auto"
-                                        allowScrollButtonsMobile
+                        <div className="col-lg-3 col-md-4 d-none d-md-block">
+                            <h5 className="d-flex justify-content-between px-2">
+                                Filters
+                                <Tooltip title='Clear Filters'>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setFilters({})}
                                     >
-                                        {tabList.map(o => (
-                                            <Tab sx={cusFilter.view === o ? { backgroundColor: '#c6d7eb' } : {}} label={o} value={o} key={o} />
-                                        ))}
-                                    </TabList>
-                                </Box>
-                                {tabList.map(o => (
-                                    <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
-                                        {dispTab(cusFilter.view)}
-                                    </TabPanel>
+                                        <FilterAltOff />
+                                    </IconButton>
+                                </Tooltip>
+                            </h5>
+                            <div className="border rounded-3 " style={{ maxHeight: '70vh', overflow: 'auto' }}>
+                                {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
+                                    <div key={ke} className="py-3 px-3 hov-bg border-bottom">
+                                        <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
+                                        {renderFilter(column)}
+                                    </div>
                                 ))}
-                            </TabContext>
+                                <br />
+                            </div>
                         </div>
-                    </div>
 
-                </div>
+                        <div className="col-lg-9 col-md-8">
+                            <div className="p-2">
+                                <TabContext value={cusFilter.view}>
+                                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                        <TabList
+                                            indicatorColor='transparant'
+                                            onChange={(e, n) => setCusFilter(pre => ({ ...pre, view: n }))}
+                                            variant="scrollable"
+                                            scrollButtons="auto"
+                                            allowScrollButtonsMobile
+                                        >
+                                            {tabList.map(o => (
+                                                <Tab sx={cusFilter.view === o ? { backgroundColor: '#c6d7eb' } : {}} label={o} value={o} key={o} />
+                                            ))}
+                                        </TabList>
+                                    </Box>
+                                    {tabList.map(o => (
+                                        <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
+                                            {dispTab(cusFilter.view)}
+                                        </TabPanel>
+                                    ))}
+                                </TabContext>
+                            </div>
+                        </div>
+
+                    </div>
+                )}
 
             </Card>
 
@@ -300,7 +315,26 @@ const QPayReports = () => {
             >
                 {/* <DialogTitle></DialogTitle> */}
                 <DialogContent>
-                    <Filters />
+                    <h5 className="d-flex justify-content-between px-2">
+                        Filters
+                        <Tooltip title='Clear Filters'>
+                            <IconButton
+                                size="small"
+                                onClick={() => setFilters({})}
+                            >
+                                <FilterAltOff />
+                            </IconButton>
+                        </Tooltip>
+                    </h5>
+                    <div className="border rounded-3 " style={{ maxHeight: '70vh', overflow: 'auto' }}>
+                        {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
+                            <div key={ke} className="py-3 px-3 hov-bg border-bottom">
+                                <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
+                                {renderFilter(column)}
+                            </div>
+                        ))}
+                        <br />
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setCusFilter(pre => ({ ...pre, filterDialog: false }))} color='error'>close</Button>

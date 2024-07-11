@@ -35,12 +35,12 @@ const FilterableTable = ({ dataArray, columns }) => {
 
     return (
         <div>
-            <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
+            <TableContainer component={Paper} sx={{ maxHeight: 550 }}>
                 <Table stickyHeader size="small">
                     <TableHead>
                         <TableRow>
                             {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
-                                <TableCell key={ke} className='fa-14 fw-bold text-muted border-end border-top'>
+                                <TableCell key={ke} className='fa-14 fw-bold border-end border-top' style={{ backgroundColor: '#EDF0F7' }}>
                                     {column?.Field_Name?.replace(/_/g, ' ')}
                                 </TableCell>
                             ))}
@@ -78,7 +78,7 @@ const FilterableTable = ({ dataArray, columns }) => {
                     onPageChange={handleChangePage}
                     rowsPerPage={rowsPerPage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
-                    rowsPerPageOptions={[20, 50, 100, 200, 500, dataArray.length]}
+                    rowsPerPageOptions={[20, 50, 100, 200, 500]}
                     labelRowsPerPage="Rows per page"
                     showFirstButton
                     showLastButton
