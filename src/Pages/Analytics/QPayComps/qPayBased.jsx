@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import { PieChart } from '@mui/x-charts/PieChart';
 import { getRandomColor, NumberFormat } from "../../../Components/functions";
-import { Autocomplete, Button, Checkbox, TextField } from "@mui/material";
-import { CheckBox, CheckBoxOutlineBlank } from "@mui/icons-material";
+import { Button } from "@mui/material";
+// import { CheckBox, CheckBoxOutlineBlank } from "@mui/icons-material";
 
-const icon = <CheckBoxOutlineBlank fontSize="small" />;
-const checkedIcon = <CheckBox fontSize="small" />;
+// const icon = <CheckBoxOutlineBlank fontSize="small" />;
+// const checkedIcon = <CheckBox fontSize="small" />;
 
 const QPayBasedComp = ({ dataArray, columns, filters }) => {
     const [qPayRange, setQPayRange] = useState([]);
     const [reload, setReload] = useState(false);
     const [filtered, setFiltered] = useState([])
     const [localState, setLocalState] = useState({
-        group: JSON.parse(localStorage.getItem('qPayGroup')) || '',
+        group: localStorage.getItem('qPayGroup') || '',
     })
 
     const comStr = (str) => str ? (str.trim()).toLowerCase() : '';
@@ -85,6 +85,10 @@ const QPayBasedComp = ({ dataArray, columns, filters }) => {
         localStorage.setItem('qPayGroup', val.target.value)
     }
 
+    // const onChangeGroup = (val) => {
+    //     setLocalState(pre => ({ ...pre, group: val }))
+    //     localStorage.setItem('qPayGroup', JSON.stringify(val))
+    // }
 
     return (
         <>
@@ -101,12 +105,12 @@ const QPayBasedComp = ({ dataArray, columns, filters }) => {
                 </select>
                 {/* <Autocomplete
                     multiple
-                    options={columns}
+                    options={[...columns?.filter(col => col?.Fied_Data === 'string')].map(filCol => filCol?.Field_Name)}
                     disableCloseOnSelect
-                    getOptionLabel={option => option?.Fied_Data === 'string' && option?.Field_Name}
+                    getOptionLabel={option => option}
                     value={localState.group || []}
                     onChange={(event, newValue) => onChangeGroup(newValue)}
-                    renderOption={(props, option, { selected }) => option?.Fied_Data === 'string' && (
+                    renderOption={(props, option, { selected }) => (
                         <li {...props}>
                             <Checkbox
                                 icon={icon}
@@ -114,17 +118,17 @@ const QPayBasedComp = ({ dataArray, columns, filters }) => {
                                 style={{ marginRight: 8 }}
                                 checked={selected}
                             />
-                            {option?.Field_Name}
+                            {option}
                         </li>
                     )}
-                    isOptionEqualToValue={(opt, val) => opt?.Field_Name === val?.Field_Name}
+                    isOptionEqualToValue={(opt, val) => opt === val}
                     renderInput={(params) => (
                         <TextField {...params} label={'Add Grouping'} placeholder={`Select column for Grouping`} />
                     )}
                 /> */}
             </div>
 
-            {(localState.group === '' || filtered.length === 0) ? (
+            {(localState?.group === '' || filtered.length === 0) ? (
                 <div className="d-flex justify-content-around align-items-center flex-wrap px-3 py-2">
 
                     <div className="table-responsive">
