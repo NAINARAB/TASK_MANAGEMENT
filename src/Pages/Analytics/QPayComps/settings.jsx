@@ -5,7 +5,7 @@ import { RotateLeft, Settings } from '@mui/icons-material';
 import { toast } from "react-toastify";
 
 
-const QPayColumnVisiblitySettings = ({ CompanyId, refresh, columns }) => {
+const QPayColumnVisiblitySettings = ({ CompanyId, refresh, columns, ReportId }) => {
     const [modifiedColumns, setModifiedColumns] = useState([]);
     const [reset, setReset] = useState(false);
     const [dialog, setDialog] = useState(false);
@@ -24,7 +24,7 @@ const QPayColumnVisiblitySettings = ({ CompanyId, refresh, columns }) => {
             body: JSON.stringify({
                 dataArray: modifiedColumns,
                 CompanyId: CompanyId,
-                ReportId: 1
+                ReportId: ReportId ? ReportId : 1
             })
         })
             .then(res => res.json())
@@ -98,7 +98,7 @@ const QPayColumnVisiblitySettings = ({ CompanyId, refresh, columns }) => {
                                                     )
                                                 )}
                                         />
-                                        
+
                                         <h6 className='fa-13 mb-0 fw-bold '>{o?.Field_Name}</h6>
                                     </div>
                                     <input
@@ -115,7 +115,7 @@ const QPayColumnVisiblitySettings = ({ CompanyId, refresh, columns }) => {
                                         }
                                         label={'Order Value'}
                                         className='mt-2 p-1 border-0 cus-inpt'
-                                        style={{ width: '80px'}}
+                                        style={{ width: '80px' }}
                                         placeholder='Order'
                                     />
                                 </Card>

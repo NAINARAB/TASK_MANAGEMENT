@@ -7,14 +7,19 @@ import QPaySalesBasedComp from "./QPayComps/salesBased";
 import QPayBasedComp from "./QPayComps/qPayBased";
 import FilterableTable from "../../Components/filterableTable";
 import QPayColumnVisiblitySettings from "./QPayComps/settings";
-import { isEqualNumber } from "../../Components/functions";
+import { isEqualNumber, isObject, checkIsNumber } from "../../Components/functions";
 import QPayGroupingList from './QPayComps/qpayGroupingList'
+import { toast } from "react-toastify";
+import { useNavigate } from 'react-router-dom';
+import { GrTransaction } from "react-icons/gr";
 
 const icon = <CheckBoxOutlineBlank fontSize="small" />;
 const checkedIcon = <CheckBox fontSize="small" />;
 
 
 const QPayReports = () => {
+    const nav = useNavigate();
+
     const tabList = ['LIST', 'Q-PAY BASED', 'SALES VALUE BASED'];
     const filterInitialValue = {
         zeros: false,
@@ -35,6 +40,8 @@ const QPayReports = () => {
 
     const [filters, setFilters] = useState({});
     const [filteredData, setFilteredData] = useState(showData);
+
+    const [ledgerId, setLedgerId] = useState([]);
 
 
     useEffect(() => {
@@ -76,12 +83,57 @@ const QPayReports = () => {
         applyFilters();
     }, [filters]);
 
+    useEffect(() => {
+        const filterCount = Object.keys(filters).length;
+        const dataArray = (filterCount > 0) ? filteredData : showData;
+
+        const str = dataArray?.reduce((idStr, obj) => {
+            return obj?.Ledger_Tally_Id ? [...idStr, obj?.Ledger_Tally_Id] : idStr
+        }, [])
+        setLedgerId(str)
+    }, [filters, showData, filteredData])
+
+    const openSalesTransaction = (obj) => {
+        
+        if (Array.isArray(obj) && obj?.length) {
+            const Ledger_Tally_Id = obj?.reduce((idStr, item) => {
+                if (item) {
+                    return idStr ? `${idStr},${item}` : `${item}`;
+                }
+                return idStr;
+            }, '');            
+            console.log(Ledger_Tally_Id)
+            nav('SalesTransaction', {
+                state: {
+                    Ledger_Tally_Id: Ledger_Tally_Id,
+                    isObj: false,
+                    rowDetails: obj,
+                    company: cusFilter.company
+                }
+            })
+
+        } else if (isObject(obj) && checkIsNumber(obj.Ledger_Tally_Id)) {
+
+            nav('SalesTransaction', {
+                state: {
+                    Ledger_Tally_Id: obj.Ledger_Tally_Id,
+                    isObj: true,
+                    rowDetails: obj,
+                    company: cusFilter.company
+                }
+            })
+
+        } else {
+            toast.error('Ledger Id not available')
+        }
+    }
+
     const dispTab = (val) => {
         const filterCount = Object.keys(filters).length;
         const dataArray = (filterCount > 0) ? filteredData : showData;
         switch (val) {
             // case 'LIST': return <QPayListComp dataArray={filteredData} />
-            case 'LIST': return <FilterableTable dataArray={dataArray} columns={sortedColumns} />
+            case 'LIST': return <FilterableTable dataArray={dataArray} columns={sortedColumns} onClickFun={openSalesTransaction} />
             case 'Q-PAY BASED': return <QPayBasedComp dataArray={dataArray} columns={sortedColumns} filters={filters} />
             case 'SALES VALUE BASED': return <QPaySalesBasedComp dataArray={dataArray} />
             default: <></>
@@ -240,14 +292,24 @@ const QPayReports = () => {
                     </span>
 
                     <span>
-                        <QPayColumnVisiblitySettings CompanyId={cusFilter.company} columns={sortedColumns} refresh={reloadData} />
-                        <IconButton
-                            onClick={() => setCusFilter(pre => ({ ...pre, filterDialog: true }))}
-                            size="small"
-                            className="d-md-none d-inline"
-                        >
-                            <FilterAlt />
-                        </IconButton>
+                        <QPayColumnVisiblitySettings CompanyId={cusFilter.company} columns={sortedColumns} refresh={reloadData} ReportId={1} />
+                        <Tooltip title='Open Sales List'>
+                            <IconButton
+                                onClick={() => openSalesTransaction(ledgerId)}
+                                size="small"
+                            >
+                                <GrTransaction />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Column Visiblity">
+                            <IconButton
+                                onClick={() => setCusFilter(pre => ({ ...pre, filterDialog: true }))}
+                                size="small"
+                                className="d-md-none d-inline"
+                            >
+                                <FilterAlt />
+                            </IconButton>
+                        </Tooltip>
                     </span>
                 </div>
 

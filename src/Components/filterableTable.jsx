@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Table, TableBody, TableContainer, TableRow, Paper, TablePagination, TableHead, TableCell } from '@mui/material';
+import { Table, TableBody, TableContainer, TableRow, Paper, TablePagination, TableHead, TableCell, TableSortLabel } from '@mui/material';
 import { isEqualNumber, LocalDate, NumberFormat } from './functions';
 
-const FilterableTable = ({ dataArray, columns }) => {
+const FilterableTable = ({ dataArray, columns, onClickFun }) => {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(20);
+    const [sortBy, setSortBy] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -16,9 +18,35 @@ const FilterableTable = ({ dataArray, columns }) => {
         setPage(0);
     };
 
+    const handleSortRequest = (columnId) => {
+        const isAsc = sortBy === columnId && sortDirection === 'asc';
+        setSortDirection(isAsc ? 'desc' : 'asc');
+        setSortBy(columnId);
+    };
+
+    const sortData = (data) => {
+        if (!sortBy) return data;
+
+        const sortedData = [...data].sort((a, b) => {
+            const aValue = a[sortBy];
+            const bValue = b[sortBy];
+
+            if (aValue === bValue) return 0;
+
+            if (sortDirection === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+
+        return sortedData;
+    };
+
+    const sortedData = sortData(dataArray);
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    const paginatedData = dataArray.slice(startIndex, endIndex);
+    const paginatedData = sortedData.slice(startIndex, endIndex);
 
     const formatString = (val, dataType) => {
         switch (dataType) {
@@ -40,8 +68,19 @@ const FilterableTable = ({ dataArray, columns }) => {
                     <TableHead>
                         <TableRow>
                             {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
-                                <TableCell key={ke} className='fa-14 fw-bold border-end border-top' style={{ backgroundColor: '#EDF0F7' }}>
-                                    {column?.Field_Name?.replace(/_/g, ' ')}
+                                <TableCell 
+                                    key={ke} 
+                                    className='fa-13 fw-bold border-end border-top' 
+                                    style={{ backgroundColor: '#EDF0F7' }}
+                                    sortDirection={sortBy === column.Field_Name ? sortDirection : false}
+                                >
+                                    <TableSortLabel
+                                        active={sortBy === column.Field_Name}
+                                        direction={sortBy === column.Field_Name ? sortDirection : 'asc'}
+                                        onClick={() => handleSortRequest(column.Field_Name)}
+                                    >
+                                        {column?.Field_Name?.replace(/_/g, ' ')}
+                                    </TableSortLabel>
                                 </TableCell>
                             ))}
                         </TableRow>
@@ -59,6 +98,7 @@ const FilterableTable = ({ dataArray, columns }) => {
                                             <TableCell 
                                                 key={column + index}
                                                 className='fa-13 border-end'
+                                                onClick={() => onClickFun ? onClickFun(row) : console.log('Function not supplied')}
                                             >
                                                 {formatString(value, column?.Fied_Data)}
                                             </TableCell>

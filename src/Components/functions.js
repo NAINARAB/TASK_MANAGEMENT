@@ -283,8 +283,16 @@ export const createAbbreviation = (sentence) => {
         .toUpperCase();
 }
 
+export const checkIsNumber = (num) => {
+    return num ? isNaN(num) ? false : true : false
+}
+
+export const isObject = (val) => {
+    return Object.prototype.toString.call(val) === '[object Object]'
+}
+
 export const isValidObject = (obj) => {
-    return Object.keys(obj).length !== 0;
+    return Object.prototype.toString.call(obj) === '[object Object]' && Object.keys(obj).length !== 0;
 }
 
 export const numbersRange = [
