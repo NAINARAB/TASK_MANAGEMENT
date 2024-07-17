@@ -10,7 +10,7 @@ import QPayColumnVisiblitySettings from "./QPayComps/settings";
 import { isEqualNumber, isObject, checkIsNumber } from "../../Components/functions";
 import QPayGroupingList from './QPayComps/qpayGroupingList'
 import { toast } from "react-toastify";
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { GrTransaction } from "react-icons/gr";
 
 const icon = <CheckBoxOutlineBlank fontSize="small" />;
@@ -43,7 +43,6 @@ const QPayReports = () => {
 
     const [ledgerId, setLedgerId] = useState([]);
 
-
     useEffect(() => {
         setSortedColumns(columns?.sort((a, b) => (a?.OrderBy && b?.OrderBy) ? a?.OrderBy - b?.OrderBy : b?.OrderBy - a?.OrderBy))
     }, [columns])
@@ -68,7 +67,7 @@ const QPayReports = () => {
     }, [repData, cusFilter.zeros]);
 
     useEffect(() => {
-        fetch(`${api}TallyReports/qpay/columnVisiblity?CompanyId=${cusFilter.company}`)
+        fetch(`${api}TallyReports/qpay/columnVisiblity?CompanyId=${cusFilter.company}&Report_Type_Id=${Boolean(cusFilter?.consolidate) ? 1 : 2}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
@@ -77,7 +76,7 @@ const QPayReports = () => {
                 }
             })
             .catch(e => console.error(e))
-    }, [cusFilter.company, reload])
+    }, [cusFilter.company, cusFilter?.consolidate, reload])
 
     useEffect(() => {
         applyFilters();
@@ -102,13 +101,13 @@ const QPayReports = () => {
                 }
                 return idStr;
             }, '');            
-            console.log(Ledger_Tally_Id)
             nav('SalesTransaction', {
                 state: {
                     Ledger_Tally_Id: Ledger_Tally_Id,
                     isObj: false,
                     rowDetails: obj,
-                    company: cusFilter.company
+                    company: cusFilter.company,
+                    preFilters: filters
                 }
             })
 
@@ -119,7 +118,8 @@ const QPayReports = () => {
                     Ledger_Tally_Id: obj.Ledger_Tally_Id,
                     isObj: true,
                     rowDetails: obj,
-                    company: cusFilter.company
+                    company: cusFilter.company,
+                    preFilters: filters
                 }
             })
 
@@ -292,7 +292,12 @@ const QPayReports = () => {
                     </span>
 
                     <span>
-                        <QPayColumnVisiblitySettings CompanyId={cusFilter.company} columns={sortedColumns} refresh={reloadData} ReportId={1} />
+                        <QPayColumnVisiblitySettings 
+                            CompanyId={cusFilter.company} 
+                            columns={sortedColumns} 
+                            refresh={reloadData} 
+                            ReportId={Boolean(cusFilter?.consolidate) ? 1 : 2} 
+                        />
                         <Tooltip title='Open Sales List'>
                             <IconButton
                                 onClick={() => openSalesTransaction(ledgerId)}
@@ -316,7 +321,7 @@ const QPayReports = () => {
                 {cusFilter.displayGrouping ? <QPayGroupingList dataArray={showData} columns={sortedColumns} /> : (
                     <div className="row flex-md-row-reverse">
 
-                        <div className="col-lg-3 col-md-4 d-none d-md-block">
+                        <div className="col-xxl-2 col-lg-3 col-md-4 d-none d-md-block">
                             <h5 className="d-flex justify-content-between px-2">
                                 Filters
                                 <Tooltip title='Clear Filters'>
@@ -339,7 +344,7 @@ const QPayReports = () => {
                             </div>
                         </div>
 
-                        <div className="col-lg-9 col-md-8">
+                        <div className="col-xxl-10 col-lg-9 col-md-8">
                             <div className="p-2">
                                 <TabContext value={cusFilter.view}>
                                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

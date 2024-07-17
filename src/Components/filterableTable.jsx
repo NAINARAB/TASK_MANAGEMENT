@@ -6,8 +6,7 @@ const FilterableTable = ({ dataArray, columns, onClickFun }) => {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(20);
-    const [sortBy, setSortBy] = useState(null);
-    const [sortDirection, setSortDirection] = useState('asc');
+    const [sortCriteria, setSortCriteria] = useState([]);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -19,25 +18,37 @@ const FilterableTable = ({ dataArray, columns, onClickFun }) => {
     };
 
     const handleSortRequest = (columnId) => {
-        const isAsc = sortBy === columnId && sortDirection === 'asc';
-        setSortDirection(isAsc ? 'desc' : 'asc');
-        setSortBy(columnId);
+        const existingCriteria = sortCriteria.find(criteria => criteria.columnId === columnId);
+        if (existingCriteria) {
+            const isAsc = existingCriteria.direction === 'asc';
+            setSortCriteria(sortCriteria.map(criteria =>
+                criteria.columnId === columnId
+                    ? { ...criteria, direction: isAsc ? 'desc' : 'asc' }
+                    : criteria
+            ));
+        } else {
+            setSortCriteria([...sortCriteria, { columnId, direction: 'asc' }]);
+        }
     };
 
     const sortData = (data) => {
-        if (!sortBy) return data;
+        if (!sortCriteria.length) return data;
 
         const sortedData = [...data].sort((a, b) => {
-            const aValue = a[sortBy];
-            const bValue = b[sortBy];
+            for (const criteria of sortCriteria) {
+                const { columnId, direction } = criteria;
+                const aValue = a[columnId];
+                const bValue = b[columnId];
 
-            if (aValue === bValue) return 0;
-
-            if (sortDirection === 'asc') {
-                return aValue > bValue ? 1 : -1;
-            } else {
-                return aValue < bValue ? 1 : -1;
+                if (aValue !== bValue) {
+                    if (direction === 'asc') {
+                        return aValue > bValue ? 1 : -1;
+                    } else {
+                        return aValue < bValue ? 1 : -1;
+                    }
+                }
             }
+            return 0;
         });
 
         return sortedData;
@@ -50,13 +61,13 @@ const FilterableTable = ({ dataArray, columns, onClickFun }) => {
 
     const formatString = (val, dataType) => {
         switch (dataType) {
-            case 'number': 
+            case 'number':
                 return NumberFormat(val)
             case 'date':
                 return LocalDate(val);
             case 'string':
                 return val;
-            default: 
+            default:
                 return ''
         }
     }
@@ -68,15 +79,23 @@ const FilterableTable = ({ dataArray, columns, onClickFun }) => {
                     <TableHead>
                         <TableRow>
                             {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
-                                <TableCell 
-                                    key={ke} 
-                                    className='fa-13 fw-bold border-end border-top' 
+                                <TableCell
+                                    key={ke}
+                                    className='fa-13 fw-bold border-end border-top'
                                     style={{ backgroundColor: '#EDF0F7' }}
-                                    sortDirection={sortBy === column.Field_Name ? sortDirection : false}
+                                    sortDirection={
+                                        sortCriteria.some(criteria => criteria.columnId === column.Field_Name)
+                                            ? sortCriteria.find(criteria => criteria.columnId === column.Field_Name).direction
+                                            : false
+                                    }
                                 >
                                     <TableSortLabel
-                                        active={sortBy === column.Field_Name}
-                                        direction={sortBy === column.Field_Name ? sortDirection : 'asc'}
+                                        active={sortCriteria.some(criteria => criteria.columnId === column.Field_Name)}
+                                        direction={
+                                            sortCriteria.some(criteria => criteria.columnId === column.Field_Name)
+                                                ? sortCriteria.find(criteria => criteria.columnId === column.Field_Name).direction
+                                                : 'asc'
+                                        }
                                         onClick={() => handleSortRequest(column.Field_Name)}
                                     >
                                         {column?.Field_Name?.replace(/_/g, ' ')}
@@ -95,7 +114,7 @@ const FilterableTable = ({ dataArray, columns, onClickFun }) => {
                                             &&
                                             (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1))
                                         ) && (
-                                            <TableCell 
+                                            <TableCell
                                                 key={column + index}
                                                 className='fa-13 border-end'
                                                 onClick={() => onClickFun ? onClickFun(row) : console.log('Function not supplied')}

@@ -33,7 +33,7 @@
   display: none !important;
 }
 
-
+/* background: linear-gradient(to top,#aed845,#9bd362); */
 .task-card {
   background: linear-gradient(to right, #5ced73, #5ced73);
 }

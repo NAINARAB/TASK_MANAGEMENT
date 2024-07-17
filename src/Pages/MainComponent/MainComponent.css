@@ -151,6 +151,10 @@ body {
     background-color: #a8bbbf;
 }
 
+.other-hide {
+    display: inline;
+}
+
 @media screen and (max-width: 1200px) {
     .fixed-fullheight-sidebar {
         display: none;
@@ -162,5 +166,9 @@ body {
 
     .open-icon {
         display: inline !important;
+    }
+
+    .other-hide {
+        display: none !important;
     }
 }

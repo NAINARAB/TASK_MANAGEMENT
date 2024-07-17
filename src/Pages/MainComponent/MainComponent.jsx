@@ -1,9 +1,12 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { IconButton, Collapse, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
-import { Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt, 
-  Tune, Add, BarChart, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings, HowToReg, Keyboard, 
-  AutoGraph
+import {
+  Menu, KeyboardArrowRight, KeyboardArrowDown, Circle, Logout, Dashboard, ManageAccounts, WorkHistory, Chat, TaskAlt,
+  Tune, Add, BarChart, SettingsAccessibility, Leaderboard, CurrencyRupee, VpnKey, AccountCircle, Settings, HowToReg, Keyboard,
+  AutoGraph,
+  KeyboardDoubleArrowRight,
+  KeyboardDoubleArrowLeft
 } from '@mui/icons-material'
 import "./MainComponent.css";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
@@ -178,6 +181,8 @@ function MainComponent(props) {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
+  const [desktopMenu, setDesktopMenu] = useState(true);
+
   useEffect(() => {
     fetch(`${api}appMenu?Auth=${parseData?.Autheticate_Id}`).then(res => res.json())
       .then(data => {
@@ -322,41 +327,51 @@ function MainComponent(props) {
       <div className="fullscreen-div">
 
         {/* sidebar */}
+        {desktopMenu && (
+          <aside className="fixed-fullheight-sidebar" >
+            <div className="sidebar-head">
+              <h4 className="my-0 ps-3">ERP</h4>
+            </div>
+            <hr className="my-2" />
+            <div className="sidebar-body-div" style={{ paddingBottom: '200px' }}>
 
-        <aside className="fixed-fullheight-sidebar">
-          <div className="sidebar-head">
-            <h4 className="my-0 ps-3">ERP</h4>
-          </div>
-          <hr className="my-2" />
-          <div className="sidebar-body-div" style={{paddingBottom: '200px'}}>
-
-            {sidebar.MainMenu.map((o, i) => (
-              <DispNavButtons
-                key={i}
-                mainBtn={o}
-                subMenus={sidebar.SubMenu}
-                nav={nav}
-                sideOpen={handleShow}
-                sideClose={handleClose}
-                page={contextObj}
-                setPage={setContextObj}
-                setCompanySettings={changeCompanySettings}
-              />
-            ))}
-          </div>
-          <div className="sidebar-bottom">
-            <button className="btn btn-dark w-100 d-flex align-items-center " onClick={props.logout}>
-              <span className=" flex-grow-1 text-start">Logout</span>
-              <Logout className="fa-in" />
-            </button>
-          </div>
-        </aside>
+              {sidebar.MainMenu.map((o, i) => (
+                <DispNavButtons
+                  key={i}
+                  mainBtn={o}
+                  subMenus={sidebar.SubMenu}
+                  nav={nav}
+                  sideOpen={handleShow}
+                  sideClose={handleClose}
+                  page={contextObj}
+                  setPage={setContextObj}
+                  setCompanySettings={changeCompanySettings}
+                />
+              ))}
+            </div>
+            <div className="sidebar-bottom">
+              <button className="btn btn-dark w-100 d-flex align-items-center " onClick={props.logout}>
+                <span className=" flex-grow-1 text-start">Logout</span>
+                <Logout className="fa-in" />
+              </button>
+            </div>
+          </aside>
+        )}
 
         <div className="content-div">
-
-          <div className="navbar-div">
+          <div className="navbar-div" style={{ color: 'white', background: 'linear-gradient(to right, #f3e5f5, #fff9c4)' }}>
 
             <div className="fa-16 fw-bold mb-0 d-flex align-items-center" >
+
+              <Tooltip title={desktopMenu ? 'Minimize Sidebar' : 'Expand Sidebar'}>
+                <IconButton
+                  onClick={() => setDesktopMenu(pre => !pre)}
+                  className="text-dark other-hide"
+                  size="small"
+                >
+                  {desktopMenu ? <KeyboardDoubleArrowLeft /> : <KeyboardDoubleArrowRight />}
+                </IconButton>
+              </Tooltip>
 
               <span className="open-icon">
                 <IconButton onClick={handleShow} className="text-dark" size="small">
@@ -365,7 +380,7 @@ function MainComponent(props) {
               </span>
 
               <div className="ms-2 flex-grow-1 d-flex flex-column">
-                <span className="flex-grow-1 text-muted">Welcome {parseData?.Name + " !"}</span>
+                <span className="flex-grow-1 text-dark" >Welcome {parseData?.Name + " !"}</span>
                 <span className="text-muted fa-12">Login Time: {new Date(parseSessionData?.InTime).toDateString()}</span>
               </div>
 

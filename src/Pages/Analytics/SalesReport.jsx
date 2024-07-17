@@ -29,8 +29,6 @@ const SalesTransaction = () => {
     const [columns, setColumns] = useState([]);
     const [cusFilter, setCusFilter] = useState(filterInitialValue);
     const [reload, setReload] = useState(false)
-    console.log(localState);
-
 
     useEffect(() => {
         setCusFilter(pre => ({
@@ -180,6 +178,7 @@ const SalesTransaction = () => {
             );
         }
     };
+    // console.log(localState.preFilters)
 
     return (
         <>
@@ -188,13 +187,21 @@ const SalesTransaction = () => {
                     <span>Sales Transaction</span>
                     <span>
                         <QPayColumnVisiblitySettings CompanyId={cusFilter.company} columns={columns} refresh={reloadData} ReportId={3} />
-                        <Button startIcon={<KeyboardArrowLeft />} variant="outlined" onClick={() => nav('/analytics/qPay')}>Back</Button>
+                        <Button
+                            startIcon={<KeyboardArrowLeft />}
+                            variant="outlined"
+                            onClick={() => {
+                                nav(-1)
+                            }}
+                        >
+                            Back
+                        </Button>
                     </span>
                 </div>
                 <CardContent>
                     <div className="row flex-md-row-reverse">
 
-                        <div className="col-lg-3 col-md-4 d-none d-md-block">
+                        <div className="col-xxl-2 col-lg-3 col-md-4 d-none d-md-block">
                             <h5 className="d-flex justify-content-between px-2">
                                 Filters
                                 <Tooltip title='Clear Filters'>
@@ -217,7 +224,7 @@ const SalesTransaction = () => {
                             </div>
                         </div>
 
-                        <div className="col-lg-9 col-md-8">
+                        <div className="col-xxl-10 col-lg-9 col-md-8">
                             <div className="d-flex flex-wrap align-items-center mb-3">
                                 <input
                                     type="date"
