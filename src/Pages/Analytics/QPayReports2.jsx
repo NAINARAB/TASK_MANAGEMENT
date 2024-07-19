@@ -10,7 +10,7 @@ import QPayColumnVisiblitySettings from "./QPayComps/settings";
 import { isEqualNumber, isObject, checkIsNumber } from "../../Components/functions";
 import QPayGroupingList from './QPayComps/qpayGroupingList'
 import { toast } from "react-toastify";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { GrTransaction } from "react-icons/gr";
 
 const icon = <CheckBoxOutlineBlank fontSize="small" />;
@@ -93,14 +93,14 @@ const QPayReports = () => {
     }, [filters, showData, filteredData])
 
     const openSalesTransaction = (obj) => {
-        
+
         if (Array.isArray(obj) && obj?.length) {
             const Ledger_Tally_Id = obj?.reduce((idStr, item) => {
                 if (item) {
                     return idStr ? `${idStr},${item}` : `${item}`;
                 }
                 return idStr;
-            }, '');            
+            }, '');
             nav('SalesTransaction', {
                 state: {
                     Ledger_Tally_Id: Ledger_Tally_Id,
@@ -254,6 +254,10 @@ const QPayReports = () => {
         <>
             <Card>
 
+                <div className="p-2 border-bottom fa-16 fw-bold">
+                    <span className="text-uppercase ps-3">Q-Pay Report</span>
+                </div>
+
                 <div className="d-flex flex-wrap justify-content-between p-2">
                     <span>
                         <FormControlLabel
@@ -292,11 +296,11 @@ const QPayReports = () => {
                     </span>
 
                     <span>
-                        <QPayColumnVisiblitySettings 
-                            CompanyId={cusFilter.company} 
-                            columns={sortedColumns} 
-                            refresh={reloadData} 
-                            ReportId={Boolean(cusFilter?.consolidate) ? 1 : 2} 
+                        <QPayColumnVisiblitySettings
+                            CompanyId={cusFilter.company}
+                            columns={sortedColumns}
+                            refresh={reloadData}
+                            ReportId={Boolean(cusFilter?.consolidate) ? 1 : 2}
                         />
                         <Tooltip title='Open Sales List'>
                             <IconButton
@@ -306,7 +310,7 @@ const QPayReports = () => {
                                 <GrTransaction />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip title="Column Visiblity">
+                        <Tooltip title="Filters">
                             <IconButton
                                 onClick={() => setCusFilter(pre => ({ ...pre, filterDialog: true }))}
                                 size="small"
@@ -319,30 +323,7 @@ const QPayReports = () => {
                 </div>
 
                 {cusFilter.displayGrouping ? <QPayGroupingList dataArray={showData} columns={sortedColumns} /> : (
-                    <div className="row flex-md-row-reverse">
-
-                        <div className="col-xxl-2 col-lg-3 col-md-4 d-none d-md-block">
-                            <h5 className="d-flex justify-content-between px-2">
-                                Filters
-                                <Tooltip title='Clear Filters'>
-                                    <IconButton
-                                        size="small"
-                                        onClick={() => setFilters({})}
-                                    >
-                                        <FilterAltOff />
-                                    </IconButton>
-                                </Tooltip>
-                            </h5>
-                            <div className="border rounded-3 " style={{ maxHeight: '70vh', overflow: 'auto' }}>
-                                {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
-                                    <div key={ke} className="py-3 px-3 hov-bg border-bottom">
-                                        <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
-                                        {renderFilter(column)}
-                                    </div>
-                                ))}
-                                <br />
-                            </div>
-                        </div>
+                    <div className="row ">
 
                         <div className="col-xxl-10 col-lg-9 col-md-8">
                             <div className="p-2">
@@ -366,6 +347,29 @@ const QPayReports = () => {
                                         </TabPanel>
                                     ))}
                                 </TabContext>
+                            </div>
+                        </div>
+
+                        <div className="col-xxl-2 col-lg-3 col-md-4 d-none d-md-block">
+                            <h5 className="d-flex justify-content-between px-2">
+                                Filters
+                                <Tooltip title='Clear Filters'>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setFilters({})}
+                                    >
+                                        <FilterAltOff />
+                                    </IconButton>
+                                </Tooltip>
+                            </h5>
+                            <div className="border rounded-3 " style={{ maxHeight: '70vh', overflow: 'auto' }}>
+                                {columns.map((column, ke) => (isEqualNumber(column?.Defult_Display, 1) || isEqualNumber(column?.isVisible, 1)) && (
+                                    <div key={ke} className="py-3 px-3 hov-bg border-bottom">
+                                        <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
+                                        {renderFilter(column)}
+                                    </div>
+                                ))}
+                                <br />
                             </div>
                         </div>
 

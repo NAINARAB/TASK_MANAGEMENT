@@ -63,6 +63,7 @@ import WeightCheckActivity from "./Pages/DataEntry/WeightCheckActivity";
 import DataEntryAbstract from "./Pages/Analytics/entryInfo";
 import QPayReports from "./Pages/Analytics/QPayReports2";
 import SalesTransaction from "./Pages/Analytics/SalesReport";
+import ItemBasedReport from "./Pages/Analytics/ItemBased";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -200,6 +201,7 @@ function App() {
                   <Route path="/analytics/todayActiviy" element={<DataEntryAbstract />} />
                   <Route path="/analytics/qPay" element={<QPayReports />} />
                   <Route path="/analytics/qPay/SalesTransaction" element={<SalesTransaction />} />
+                  <Route path="/analytics/itemBasedReport" element={<ItemBasedReport />} />
 
                   <Route path="/invalid-credentials" element={<InvalidPageComp />} />
                   <Route path="*" element={<InvalidPageComp message={'404 Page Not Found'} />} />
