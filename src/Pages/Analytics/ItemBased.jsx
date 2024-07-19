@@ -53,6 +53,7 @@ const ItemBasedReport = () => {
             isVisible: 1,
             Field_Name: 'invoice_no',
             Fied_Data: 'string',
+            Filter: false
         },
         {
             isVisible: 1,
@@ -63,51 +64,61 @@ const ItemBasedReport = () => {
             isVisible: 1,
             Field_Name: 'Quantity',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Item_Rate',
             Fied_Data: 'number',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'amount',
             Fied_Data: 'number',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Ledger_Name',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Stock_Group',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Group_ST',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Brand',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Bag',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Item_Name_Modified',
             Fied_Data: 'string',
+            Filter: true
         },
         {
             isVisible: 1,
             Field_Name: 'Date',
             Fied_Data: 'date',
+            Filter: true
         },
     ];
 
@@ -257,6 +268,7 @@ const ItemBasedReport = () => {
                     </div>
 
                 </CardContent>
+                
                 <div className="row">
 
                     <div className="col-xxl-10 col-lg-9 col-md-8">
@@ -281,7 +293,7 @@ const ItemBasedReport = () => {
                             </Tooltip>
                         </h5>
                         <div className="border rounded-3 " style={{ maxHeight: '64vh', overflow: 'auto' }}>
-                            {columns.map((column, ke) => isEqualNumber(column?.isVisible, 1) && (
+                            {columns.map((column, ke) => (isEqualNumber(column?.isVisible, 1) && column.Filter) && (
                                 <div key={ke} className="py-3 px-3 hov-bg border-bottom">
                                     <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
                                     {renderFilter(column)}
@@ -292,6 +304,7 @@ const ItemBasedReport = () => {
                     </div>
 
                 </div>
+
             </Card>
 
             <Dialog
@@ -315,7 +328,7 @@ const ItemBasedReport = () => {
                     </h5>
 
                     <div className="border rounded-3 " style={{ maxHeight: '70vh', overflow: 'auto' }}>
-                        {columns.map((column, ke) => isEqualNumber(column?.isVisible, 1) && (
+                        {columns.map((column, ke) => (isEqualNumber(column?.isVisible, 1) && column.Filter) && (
                             <div key={ke} className="py-3 px-3 hov-bg border-bottom">
                                 <label className='mt-2 mb-1'>{column?.Field_Name?.replace(/_/g, ' ')}</label>
                                 {renderFilter(column)}
