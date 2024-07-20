@@ -25,11 +25,14 @@ const DriverActivities = () => {
         TripCategory: 'LRY SHED & LOCAL',
         TonnageValue: '',
         TripNumber: 1,
-        EventTime: '12:00',
+        EventTime: '10:00',
+        EndTime: '12:00',
+        VehicleNumber: '',
         CreatedBy: storage.UserId,
     }
     const [activityData, setActivityData] = useState([]);
     const [driverBased, setDriverBased] = useState([]);
+    const [listBased, setListBased] = useState([]);
     const [timeBased, setTimeBased] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [inputValues, setInputValues] = useState(initialValue);
@@ -38,7 +41,7 @@ const DriverActivities = () => {
         reqDate: ISOString(),
         reqLocation: 'MILL',
         dialog: false,
-        view: 'DATA ENTRY',
+        view: 'LIST',
     })
 
     useEffect(() => {
@@ -64,6 +67,10 @@ const DriverActivities = () => {
         fetch(`${api}driverActivities/timeBased?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
             .then(res => res.json())
             .then(data => setTimeBased(data.data))
+            .catch(e => console.error(e))
+        fetch(`${api}driverActivities/view2?reqDate=${filter.reqDate}&reqLocation=${filter.reqLocation}`)
+            .then(res => res.json())
+            .then(data => setListBased(data.data))
             .catch(e => console.error(e))
     }, [reload, filter.reqDate, filter.reqLocation])
 
@@ -173,9 +180,9 @@ const DriverActivities = () => {
                                 <tr>
                                     <th className='fa-14 border' style={{ backgroundColor: '#EDF0F7' }}>Driver Name</th>
                                     {activityData[0] && activityData[0]?.LocationGroup?.map((o, i) => (
-                                        <th 
-                                            className='fa-14 border text-center' 
-                                            key={i} 
+                                        <th
+                                            className='fa-14 border text-center'
+                                            key={i}
                                             colSpan={o?.TripDetails?.length}
                                             style={{ backgroundColor: '#EDF0F7' }}
                                         >
@@ -407,6 +414,108 @@ const DriverActivities = () => {
                         </div>
                     </>
                 )
+            case 'LIST':
+                return (
+                    <>
+                        <div className="table-responsive">
+                            <table className="table">
+                                <tbody>
+                                    <tr>
+                                        {Object.entries(categoryTotals).map(([objKey, objValue]) => (
+                                            <td className='fa-14 border text-center' key={objKey}>
+                                                {objKey} : <span className='blue-text'>{NumberFormat(objValue)}</span>
+                                            </td>
+                                        ))}
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        {['SNo', 'DRIVER NAME', 'TRIP NO', 'VEHICLE NO', 'TONNAGE', 'START TIME', 'END TIME', 'CATEGORY'
+                                            // ...Object.entries(categoryTotals).map(([objKey, objValue]) => createAbbreviation(objKey) + ' (' + NumberFormat(objValue) + ')')
+                                        ].map((o, i) => (
+                                            <th key={i} className='fa-14 border text-center' style={{ backgroundColor: '#EDF0F7' }}>{o}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {listBased?.map((o, i) => {
+                                        const TripCount = o?.DriverTrips?.reduce((acc, trip) => acc + (trip?.Trips?.length || 1), 0) || 1;
+
+                                        return (
+                                            o?.DriverTrips?.map((oo, ii) => (
+                                                oo?.Trips?.map((ooo, iii) => {
+                                                    const isFirstRow = ii === 0 && iii === 0;
+                                                    const onClick = () => {
+                                                        if (isEqualNumber(contextObj?.Edit_Rights, 1)) {
+                                                            setInputValues(ooo);
+                                                            setFilter(pre => ({ ...pre, dialog: true }))
+                                                        }
+                                                    }
+
+                                                    return (
+                                                        <tr key={`${i}_${ii}_${iii}`}>
+                                                            {isFirstRow && (
+                                                                <>
+                                                                    <td
+                                                                        className='fa-13 border text-center'
+                                                                        rowSpan={TripCount}
+                                                                        style={{ verticalAlign: 'middle' }}
+                                                                    >
+                                                                        {i + 1}
+                                                                    </td>
+                                                                    <td
+                                                                        className='fa-13 border text-center blue-text'
+                                                                        rowSpan={TripCount}
+                                                                        style={{ verticalAlign: 'middle' }}
+                                                                    >
+                                                                        {o?.DriverName}
+                                                                    </td>
+                                                                </>
+                                                            )}
+                                                            <td className='fa-13 border text-center p-0' onClick={onClick}>
+                                                                <div className="cellHover p-2">
+                                                                    {ooo?.TripNumber}
+                                                                </div>
+                                                            </td>
+                                                            <td className='fa-13 border text-center p-0' onClick={onClick}>
+                                                                <div className="cellHover p-2">
+                                                                    {ooo?.VehicleNumber || ''}
+                                                                </div>
+                                                            </td>
+                                                            <td className='fa-13 border text-center p-0' onClick={onClick}>
+                                                                <div className="cellHover p-2">
+                                                                    {ooo?.TonnageValue}
+                                                                </div>
+                                                            </td>
+                                                            <td className='fa-13 border text-center p-0' onClick={onClick}>
+                                                                <div className="cellHover p-2">
+                                                                    {ooo?.EventTime ? convertToTimeObject(ooo?.EventTime) : '-'}
+                                                                </div>
+                                                            </td>
+                                                            <td className='fa-13 border text-center p-0' onClick={onClick}>
+                                                                <div className="cellHover p-2">
+                                                                    {ooo?.EndTime ? convertToTimeObject(ooo?.EndTime) : '-'}
+                                                                </div>
+                                                            </td>
+                                                            <td className='fa-13 border text-center p-0' onClick={onClick}>
+                                                                <div className="cellHover p-2">
+                                                                    {ooo?.TripCategory || '-'}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            ))
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )
 
             default:
                 return <></>
@@ -456,6 +565,7 @@ const DriverActivities = () => {
                                 scrollButtons="auto"
                                 allowScrollButtonsMobile
                             >
+                                <Tab sx={filter.view === 'LIST' ? { backgroundColor: '#c6d7eb' } : {}} label="LIST" value='LIST' />
                                 <Tab sx={filter.view === 'DATA ENTRY' ? { backgroundColor: '#c6d7eb' } : {}} label={'DATA ENTRY'} value='DATA ENTRY' />
                                 <Tab sx={filter.view === 'ABSTRACT' ? { backgroundColor: '#c6d7eb' } : {}} label="ABSTRACT" value='ABSTRACT' />
                                 <Tab sx={filter.view === 'CATEGORY BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="CATEGORY BASED" value='CATEGORY BASED' />
@@ -463,7 +573,7 @@ const DriverActivities = () => {
                                 <Tab sx={filter.view === 'TIME BASED' ? { backgroundColor: '#c6d7eb' } : {}} label="TIME BASED" value='TIME BASED' />
                             </TabList>
                         </Box>
-                        {['DATA ENTRY', 'ABSTRACT', 'CATEGORY BASED', 'DRIVER BASED', 'TIME BASED'].map(o => (
+                        {['LIST', 'DATA ENTRY', 'ABSTRACT', 'CATEGORY BASED', 'DRIVER BASED', 'TIME BASED'].map(o => (
                             <TabPanel value={o} sx={{ px: 0, py: 2 }} key={o}>
                                 {(activityData.length || driverBased.length) ? dispView(o) : <></>}
                             </TabPanel>
@@ -529,6 +639,20 @@ const DriverActivities = () => {
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td className='border-0' style={{ verticalAlign: 'middle' }}>Vehicle Number</td>
+                                        <td className='border-0' >
+                                            <input
+                                                value={inputValues?.VehicleNumber}
+                                                type='text'
+                                                // list='driverList'
+                                                // required
+                                                placeholder='Vehicle Number'
+                                                className='cus-inpt'
+                                                onChange={e => setInputValues(pre => ({ ...pre, VehicleNumber: e.target.value }))}
+                                            />
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td className='border-0' style={{ verticalAlign: 'middle' }}>Trip Number</td>
                                         <td className='border-0' >
                                             <input
@@ -557,13 +681,26 @@ const DriverActivities = () => {
                                     <tr>
                                         <td className='border-0' style={{ verticalAlign: 'middle' }}>Time</td>
                                         <td className='border-0' >
-                                            <input
-                                                type='time'
-                                                value={inputValues?.EventTime}
-                                                required
-                                                className='cus-inpt'
-                                                onChange={e => setInputValues(pre => ({ ...pre, EventTime: e.target.value }))}
-                                            />
+                                            <div className='d-flex'>
+                                                <div className='w-50 pe-1'>
+                                                    <input
+                                                        type='time'
+                                                        value={inputValues?.EventTime}
+                                                        required
+                                                        className='cus-inpt'
+                                                        onChange={e => setInputValues(pre => ({ ...pre, EventTime: e.target.value }))}
+                                                    />
+                                                </div>
+                                                <div className='w-50 ps-1'>
+                                                    <input
+                                                        type='time'
+                                                        value={inputValues?.EndTime}
+                                                        // required
+                                                        className='cus-inpt'
+                                                        onChange={e => setInputValues(pre => ({ ...pre, EndTime: e.target.value }))}
+                                                    />
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     <tr>
