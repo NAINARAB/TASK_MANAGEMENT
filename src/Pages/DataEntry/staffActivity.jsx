@@ -178,7 +178,7 @@ const StaffActivity = () => {
                                             <td className='fa-14 text-center border blue-text'>
                                                 {NumberFormat(o?.Categories?.reduce((sum, obj) => {
                                                     let total = 0;
-                                                    total += obj?.StaffDetails?.Tonnage || 0
+                                                    total += obj?.Category !== 'OTHERS 1 - PRINT' ? obj?.StaffDetails?.Tonnage ?? 0 : 0
                                                     return total + sum
                                                 }, 0))}
                                             </td>

@@ -73,6 +73,7 @@ const GodownActivity = () => {
 
     const RowComp = ({ o, sno }) => {
         const [open, setOpen] = useState(false);
+        const [subRows, setSubRows] = useState(false);
 
         return (
             <>
@@ -82,7 +83,17 @@ const GodownActivity = () => {
                         className={o?.DayEntries?.length > 1 ? 'fa-13 border text-center text-primary' : 'fa-13 border text-center'}
                         onClick={() => setOpen(!open)}
                     >
-                        {o?.EntryDate ? LocalDate(o?.EntryDate) : '-'}
+                        {!open
+                            ? <p className='m-0'>{o?.EntryDate ? LocalDate(o?.EntryDate) : '-'}</p>
+                            : (
+                                <>
+                                    <p className='m-0'>{o?.EntryDate ? LocalDate(o?.EntryDate) : '-'}</p>
+                                    <p className='m-0 text-dark'>
+                                        {o?.DayEntries[0]?.EntryAt ? LocalDateWithTime(o?.DayEntries[0]?.EntryAt) : '-'}
+                                    </p>
+                                </>
+                            )
+                        }
                     </td>
 
                     <td className='fa-15 border text-center fw-bold text-primary'>
@@ -134,9 +145,19 @@ const GodownActivity = () => {
                     o?.DayEntries?.map((oo, ii) => ii > 0 && (
                         <tr key={ii}>
                             <td className='fa-13 border text-center'>{sno + '.' + (ii)}</td>
-                            <td className='fa-13 border text-center'>
+                            <td className='fa-13 border text-center' onClick={() => setSubRows(pre => !pre)}>
                                 {/* {oo?.EntryDate ? LocalDate(oo?.EntryDate) : '-'} */}
-                                <p className='text-primary m-0'>{oo?.EntryAt ? LocalDateWithTime(oo?.EntryAt) : '-'}</p>
+                                {!subRows
+                                    ? <p className='m-0'>{oo?.EntryAt ? LocalDate(oo?.EntryAt) : '-'}</p>
+                                    : (
+                                        <>
+                                            <p className='m-0'>{oo?.EntryAt ? LocalDate(oo?.EntryAt) : '-'}</p>
+                                            <p className='m-0 text-dark'>
+                                                {oo?.EntryAt ? LocalDateWithTime(oo?.EntryAt) : '-'}
+                                            </p>
+                                        </>
+                                    )
+                                }
                             </td>
 
                             <td className='fa-15 border text-center fw-bold text-primary'>{validValue(oo?.PurchaseTotal)}</td>
@@ -179,7 +200,7 @@ const GodownActivity = () => {
         switch (val) {
             case 'DATA ENTRY':
                 return (
-                    <div className="table-responsive">
+                    <div className="table-responsive" style={{ maxHeight: '60dvh' }}>
                         <table className="table">
 
                             <thead>
@@ -195,7 +216,7 @@ const GodownActivity = () => {
                                         'SNo', 'DATE', 'TOTAL', 'PURCHASE', 'OTHER GODOWN', 'TRANSFER', 'HANDLE',
                                         'WG CHECKING', 'TOTAL', 'SALES TOTAL', 'LORRY SHED', 'VANDI VARUM', 'DD SALES', 'TRANSFER', 'OTHER GODOWN', 'ACTION'
                                     ].map((o, i) => (
-                                        <td className='border fa-12 text-center' key={i}>{o}</td>
+                                        <td className='border fa-12 text-center tble-hed-stick' key={i}>{o}</td>
                                     ))}
                                 </tr>
                             </thead>
