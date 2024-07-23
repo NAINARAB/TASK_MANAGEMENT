@@ -64,6 +64,7 @@ import DataEntryAbstract from "./Pages/Analytics/entryInfo";
 import QPayReports from "./Pages/Analytics/QPayReports2";
 import SalesTransaction from "./Pages/Analytics/SalesReport";
 import ItemBasedReport from "./Pages/Analytics/ItemBased";
+import DataEntryAttendance from "./Pages/DataEntry/dataEntryAttendance";
 
 function App() {
   const [login, setLogin] = useState(false);
@@ -197,6 +198,7 @@ function App() {
                   <Route path="/dataEntry/staffs" element={<StaffActivity />} />
                   <Route path="/dataEntry/fileUpload" element={<ActivityImagesUpload />} />
                   <Route path="/dataEntry/wgCheck" element={<WeightCheckActivity />} />
+                  <Route path="/dataEntry/staffAttendance" element={<DataEntryAttendance />} />
 
                   <Route path="/analytics/todayActiviy" element={<DataEntryAbstract />} />
                   <Route path="/analytics/qPay" element={<QPayReports />} />
