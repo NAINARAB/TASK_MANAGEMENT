@@ -377,6 +377,12 @@
 }
 
 
+.text-ellips {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
 
 .hide-toggle {
   background-image: none !important;
