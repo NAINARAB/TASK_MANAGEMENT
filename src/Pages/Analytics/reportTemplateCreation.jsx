@@ -1,26 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../API';
-import { Card, CardContent, Tab, Switch, Button, Tooltip } from '@mui/material';
-import { RemoveRedEyeOutlined } from '@mui/icons-material'
+import { Card, CardContent, Tab, Switch, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { ArrowBackIosNewOutlined, RemoveRedEyeOutlined } from '@mui/icons-material'
 import { TabPanel, TabList, TabContext } from '@mui/lab';
 import { Box } from '@mui/system';
-import { isEqualNumber } from '../../Components/functions';
+import { isEqualNumber, Subraction } from '../../Components/functions';
 import { toast } from 'react-toastify'
 
 const ReportTemplateCreation = () => {
+    const storage = JSON.parse(localStorage.getItem('user'))
     const initialValue = {
         reportName: '',
         tables: [],
-        currentTab: 'tbl_Q_Pay_Summarry'
+        tableJoins: [],
+        currentTab: 'tbl_Q_Pay_Summarry',
+        previewDialog: false,
+        createdBy: storage.UserId
     };
     const [inputValues, setInputValues] = useState(initialValue);
-    const [reportTables, setReportTables] = useState([])
-    const tablesSelected = inputValues?.tables?.reduce((sum, obj) => sum += obj?.isChecked ? 1 : 0, 0)
+    const [reportTables, setReportTables] = useState([]);
+    const tablesSelected = inputValues?.tables?.reduce((sum, obj) => sum += Boolean(Number(obj?.isChecked)) ? 1 : 0, 0)
     const columnsSelected = inputValues?.tables?.reduce((sum, item) => (
-        sum += item?.columns?.reduce((colSum, colItem) => (
+        sum += Boolean(Number(item?.isChecked)) ? item?.columns?.reduce((colSum, colItem) => (
             colSum += isEqualNumber(colItem?.isVisible, 1) ? 1 : 0
-        ), 0)
+        ), 0) : 0
     ), 0)
+
+    const displaySelectedState = (
+        <span className="p-2 mt-3 border rounded-3 d-inline-block w-auto">
+            <table>
+                <tbody>
+                    <tr>
+                        <td className=' border-end'>Tables Selected</td>
+                        <td className='px-2 blue-text'>{tablesSelected}</td>
+                    </tr>
+                    <tr>
+                        <td className=' border-end'>Columns Selected&emsp;&emsp;</td>
+                        <td className='px-2 blue-text'>{columnsSelected}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </span>
+    )
 
 
     useEffect(() => {
@@ -35,7 +56,7 @@ const ReportTemplateCreation = () => {
 
     console.log(inputValues)
 
-    const handleTableCheck = (tableName, checked) => {
+    const handleTableCheck = (tableName, checked, aliasName) => {
         setInputValues(prev => {
             const updatedTables = [...prev.tables];
             const tableIndex = updatedTables.findIndex(table => table.Table_Name === tableName);
@@ -61,9 +82,15 @@ const ReportTemplateCreation = () => {
                     updatedTables[tableIndex].columns = arraywithDefaultColumn;
                 }
             } else {
-                updatedTables.push({ Table_Name: tableName, isChecked: checked, columns: arraywithDefaultColumn });
+                updatedTables.push({
+                    Table_Id: reportTables?.find(table => table?.Table_Name === tableName)?.Table_Id || '',
+                    Table_Name: tableName,
+                    AliasName: aliasName,
+                    isChecked: checked,
+                    columns: arraywithDefaultColumn,
+                });
             }
-            return { ...prev, tables: updatedTables };
+            return { ...prev, tables: updatedTables.filter(table => Boolean(Number(table?.isChecked))) };
 
         });
     };
@@ -118,6 +145,72 @@ const ReportTemplateCreation = () => {
         });
     };
 
+    const openPreviewDialog = () => {
+        const selectedTables = inputValues.tables?.reduce((tot, table) => (
+            tot += Boolean(table?.isChecked) ? 1 : 0
+        ), 0)
+        setInputValues(pre => ({
+            ...pre,
+            previewDialog: true,
+            tableJoins: (selectedTables > 1) ? (
+                Array.from({ length: Subraction(selectedTables, 1) }).map((_, i) => ({
+                    Sno: i,
+                    Join_First_Table_Id: '',
+                    Join_First_Table_Column: '',
+                    Join_Second_Table_Id: '',
+                    Join_Second_Table_Column: '',
+                }))
+            ) : []
+        }))
+    }
+
+    const onChangeJoining = (value, index, key) => {
+        setInputValues(pre => {
+            const updatedJoins = [...pre.tableJoins];
+            const obj = { ...updatedJoins[index] };
+            obj[key] = value;
+
+            if (key === 'Join_First_Table_Id') {
+                obj.Join_First_Table_Column = '';
+            }
+            if (key === 'Join_Second_Table_Id') {
+                obj.Join_Second_Table_Column = '';
+            }
+
+            // const repTableIndex = reportTables?.findIndex(table => isEqualNumber(table?.Table_Id, value));
+            // const defaultColumnIndex = reportTables[repTableIndex]?.Columns?.findIndex(column => isEqualNumber(column?.IS_Default, 1));
+            // const defaultColumn = defaultColumnIndex !== -1 ? reportTables[repTableIndex]?.Columns[defaultColumnIndex] : {};
+
+            // obj[colKey] = defaultColumn?.Column_Name || '';
+            if (obj?.Join_First_Table_Id === obj?.Join_Second_Table_Id) {
+                obj.Join_Second_Table_Id = ''
+            }
+            updatedJoins[index] = obj;
+
+            return {
+                ...pre,
+                tableJoins: [...updatedJoins]
+            }
+        })
+    }
+
+    const saveTemplate = () => {
+        fetch(`${api}reportTemplate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': "application/json",
+            },
+            body: JSON.stringify(inputValues)
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data?.success) {
+                    // setReportTables(data?.data);
+                    setInputValues(initialValue)
+                }
+            }).catch(e => console.log(e))
+    }
+
 
     return (
         <>
@@ -138,20 +231,7 @@ const ReportTemplateCreation = () => {
                         />
                     </div>
 
-                    <div className="p-3">
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>Tables Selected:</td>
-                                    <td>{tablesSelected}</td>
-                                </tr>
-                                <tr>
-                                    <td>Columns Selected:&emsp;&emsp;</td>
-                                    <td>{columnsSelected}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    {displaySelectedState}
 
                     <Box className='d-flex flex-wrap mt-3' >
 
@@ -182,7 +262,7 @@ const ReportTemplateCreation = () => {
                                     <div className='d-flex align-items-center mb-4 border-bottom'>
                                         <Switch
                                             checked={Boolean(inputValues.tables.find(t => t.Table_Name === table?.Table_Name)?.isChecked)}
-                                            onChange={e => handleTableCheck(table?.Table_Name, e.target.checked)}
+                                            onChange={e => handleTableCheck(table?.Table_Name, e.target.checked, table?.AliasName)}
                                         />
                                         <h6 className='fa-13 mb-0 fw-bold '>{table?.AliasName} TABLE</h6>
                                     </div>
@@ -235,11 +315,11 @@ const ReportTemplateCreation = () => {
                             <Button
                                 variant='outlined'
                                 startIcon={<RemoveRedEyeOutlined />}
-                                disabled={tablesSelected === 0 || columnsSelected <= 4}
+                                disabled={!inputValues?.reportName || tablesSelected === 0 || columnsSelected <= 4}
                                 onClick={
                                     columnsSelected > 25
                                         ? () => toast.warn('Maximum 25 Column limit exceeded')
-                                        : () => { }
+                                        : () => openPreviewDialog()
                                 }
                             >
                                 Preview
@@ -248,6 +328,176 @@ const ReportTemplateCreation = () => {
                     </Tooltip>
                 </div>
             </Card>
+
+            <Dialog
+                open={inputValues?.previewDialog}
+                onClose={() => setInputValues(pre => ({ ...pre, previewDialog: false }))}
+                fullScreen
+            >
+                <DialogTitle>Define Table Joins</DialogTitle>
+                <form onSubmit={e => {
+                    e.preventDefault();
+                    saveTemplate();
+                }}>
+                    <DialogContent>
+                        {displaySelectedState}
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        {inputValues?.tables?.map((table, tabIndex) => (
+                                            <React.Fragment key={tabIndex}>
+                                                <th className="border fa-14 text-center">{table?.AliasName} ( {table?.columns?.length} )</th>
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        {inputValues?.tables?.map((table, tabIndex) => (
+                                            <React.Fragment key={tabIndex}>
+                                                <td className="border fa-13 text-center">
+                                                    {table?.columns?.map((col, colInd) => (
+                                                        <p key={colInd}>{col?.Column_Name}</p>
+                                                    ))}
+                                                </td>
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {inputValues?.tables?.length > 1 && (
+                            <div className="p-2 cus-grid">
+
+                                {inputValues?.tableJoins?.map((inputs, inputIndex) => {
+                                    return (
+                                        <div className=' p-2' key={inputIndex}>
+                                            <h5 className='border-bottom pb-2 text-center'>JOIN - {inputIndex + 1}</h5>
+                                            <div className="p-2 mt-3 border rounded-3 ">
+                                                <table className='w-100' >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td className='fa-13 blue-text'>Table - 1</td>
+                                                            <td className='fa-13 '>
+                                                                <select
+                                                                    value={inputs?.Join_First_Table_Id}
+                                                                    className='cus-inpt '
+                                                                    onChange={e => onChangeJoining(e.target.value, inputIndex, 'Join_First_Table_Id')}
+                                                                    required
+                                                                >
+                                                                    <option value="">Select</option>
+                                                                    {inputValues?.tables?.map((table, tableInd) => (
+                                                                        <option
+                                                                            key={tableInd}
+                                                                            value={table?.Table_Id}
+                                                                            disabled={
+                                                                                inputValues?.tableJoins?.find(fil =>
+                                                                                    isEqualNumber(fil.Join_First_Table_Id, table?.Table_Id)
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {table?.AliasName}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className='fa-13 blue-text'>Table - 2</td>
+                                                            <td className='fa-13 '>
+                                                                <select
+                                                                    value={inputs?.Join_Second_Table_Id}
+                                                                    className='cus-inpt '
+                                                                    onChange={e => onChangeJoining(e.target.value, inputIndex, 'Join_Second_Table_Id')}
+                                                                    required
+                                                                >
+                                                                    <option value="">Select</option>
+                                                                    {inputValues?.tables?.map((table, tableInd) => (
+                                                                        <option
+                                                                            key={tableInd}
+                                                                            value={table?.Table_Id}
+                                                                            disabled={
+                                                                                inputValues?.tableJoins?.find(fil =>
+                                                                                    isEqualNumber(fil.Join_First_Table_Id, table?.Table_Id)
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {table?.AliasName}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className='fa-13 blue-text'>Table - 1 Key</td>
+                                                            <td className='fa-13 '>
+                                                                <select
+                                                                    value={inputs?.Join_First_Table_Column}
+                                                                    className='cus-inpt '
+                                                                    onChange={e => onChangeJoining(e.target.value, inputIndex, 'Join_First_Table_Column')}
+                                                                    required
+                                                                >
+                                                                    <option value="">Select</option>
+                                                                    {inputs?.Join_First_Table_Id && (
+                                                                        [...inputValues?.tables]?.find(table => (
+                                                                            isEqualNumber(table?.Table_Id, inputs?.Join_First_Table_Id)
+                                                                        ))?.columns?.map(joinKeys => isEqualNumber(joinKeys?.IS_Join_Key, 1) && (
+                                                                            <option value={joinKeys?.Column_Name}>{joinKeys?.Column_Name}</option>
+                                                                        ))
+                                                                    )}
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className='fa-13 blue-text'>Table - 2 Key</td>
+                                                            <td className='fa-13 '>
+                                                                <select
+                                                                    value={inputs?.Join_Second_Table_Column}
+                                                                    className='cus-inpt '
+                                                                    onChange={e => onChangeJoining(e.target.value, inputIndex, 'Join_Second_Table_Column')}
+                                                                    required
+                                                                >
+                                                                    <option value="">Select</option>
+                                                                    {inputs?.Join_Second_Table_Id && (
+                                                                        [...inputValues?.tables]?.find(table => (
+                                                                            isEqualNumber(table?.Table_Id, inputs?.Join_Second_Table_Id)
+                                                                        ))?.columns?.map(joinKeys => isEqualNumber(joinKeys?.IS_Join_Key, 1) && (
+                                                                            <option value={joinKeys?.Column_Name}>{joinKeys?.Column_Name}</option>
+                                                                        ))
+                                                                    )}
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={() => setInputValues(pre => ({ ...pre, previewDialog: false }))}
+                            type='button'
+                            startIcon={<ArrowBackIosNewOutlined />}
+                        >
+                            Back
+                        </Button>
+                        <Button
+                            // onClick={() => setInputValues(pre => ({ ...pre, previewDialog: false }))}
+                            type='submit'
+                            startIcon={<ArrowBackIosNewOutlined />}
+                        >
+                            Submit
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
         </>
     );
 };

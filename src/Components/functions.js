@@ -326,3 +326,23 @@ export const getRandomColor = () => {
     }
     return color;
 };
+
+export const getPermutations = (arr) => {
+    if (arr.length === 1) {
+        return [arr];
+    }
+    
+    let permutations = [];
+    
+    for (let i = 0; i < arr.length; i++) {
+        let currentElement = arr[i];
+        let remainingElements = arr.slice(0, i).concat(arr.slice(i + 1));
+        let remainingPermutations = getPermutations(remainingElements);
+        
+        for (let perm of remainingPermutations) {
+            permutations.push([currentElement, ...perm]);
+        }
+    }
+    
+    return permutations;
+}
