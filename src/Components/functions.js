@@ -14,6 +14,19 @@ export const LocalTime = (dateObj) => {
     return receivedDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
 
+export const UTCDateWithTime = (dateObj) => {
+    const receivedDate = dateObj ? new Date(dateObj) : new Date();
+    return receivedDate.toLocaleString('en-US', {
+        timeZone: 'UTC',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false 
+    });
+}
+
 export const getMonth = (date) => {
     const year = (date ? date : new Date()).getFullYear();
     const month = String((date ? date : new Date()).getMonth() + 1).padStart(2, '0');

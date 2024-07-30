@@ -1,15 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import api from '../../API';
 import { Card, CardContent, Tab, Switch, Button, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { ArrowBackIosNewOutlined, RemoveRedEyeOutlined } from '@mui/icons-material'
+import { ArrowBackIosNewOutlined, KeyboardArrowLeft, RemoveRedEyeOutlined, Save } from '@mui/icons-material'
 import { TabPanel, TabList, TabContext } from '@mui/lab';
 import { Box } from '@mui/system';
-import { isEqualNumber, Subraction } from '../../Components/functions';
+import { isEqualNumber, isValidObject, Subraction } from '../../Components/functions';
 import { toast } from 'react-toastify'
+import { useLocation, useNavigate } from 'react-router-dom';
+import { MyContext } from '../../Components/context/contextProvider';
+
 
 const ReportTemplateCreation = () => {
-    const storage = JSON.parse(localStorage.getItem('user'))
+    const storage = JSON.parse(localStorage.getItem('user'));
+    const nav = useNavigate();
+    const { contextObj } = useContext(MyContext);
+    const locationState = useLocation().state;
     const initialValue = {
+        Report_Type_Id: '',
         reportName: '',
         tables: [],
         tableJoins: [],
@@ -43,9 +50,23 @@ const ReportTemplateCreation = () => {
         </span>
     )
 
+    console.log(locationState)
 
     useEffect(() => {
-        fetch(`${api}reportTemplate`)
+        const stateValue = locationState?.ReportState;
+        if (isValidObject(stateValue)) {
+            setInputValues(pre => ({
+                ...pre,
+                Report_Type_Id: stateValue?.Report_Type_Id ?? '',
+                reportName: stateValue?.reportName ?? '',
+                tables: stateValue?.tables ?? [],
+                createdBy: stateValue?.createdBy ?? storage?.UserId
+            }))
+        }
+    }, [])
+
+    useEffect(() => {
+        fetch(`${api}reportTablesAndColumns`)
             .then(res => res.json())
             .then(data => {
                 if (data?.success) {
@@ -113,7 +134,7 @@ const ReportTemplateCreation = () => {
                         isVisible: checked ? 1 : 0
                     });
                 }
-                updatedTables[tableIndex].columns = columns;
+                updatedTables[tableIndex].columns = columns?.filter(fil => isEqualNumber(fil?.isVisible, 1));
             }
 
             return { ...prev, tables: updatedTables };
@@ -154,7 +175,6 @@ const ReportTemplateCreation = () => {
             previewDialog: true,
             tableJoins: (selectedTables > 1) ? (
                 Array.from({ length: Subraction(selectedTables, 1) }).map((_, i) => ({
-                    Sno: i,
                     Join_First_Table_Id: '',
                     Join_First_Table_Column: '',
                     Join_Second_Table_Id: '',
@@ -195,8 +215,9 @@ const ReportTemplateCreation = () => {
     }
 
     const saveTemplate = () => {
+        setInputValues(pre => ({ ...pre, previewDialog: false }))
         fetch(`${api}reportTemplate`, {
-            method: 'POST',
+            method: inputValues?.Report_Type_Id ? 'PUT' : 'POST',
             headers: {
                 'Content-Type': "application/json",
             },
@@ -205,18 +226,23 @@ const ReportTemplateCreation = () => {
             .then(res => res.json())
             .then(data => {
                 if (data?.success) {
-                    // setReportTables(data?.data);
-                    setInputValues(initialValue)
+                    setInputValues(initialValue);
+                    nav(-1)
+                    toast.success(data.message)
+                } else {
+                    toast.error(data.message)
                 }
             }).catch(e => console.log(e))
     }
 
 
-    return (
+    return isEqualNumber(contextObj?.Add_Rights, 1) && (
         <>
             <Card>
-                <div className="fa-16 fw-bold border-bottom d-flex justify-content-between align-items-center">
-                    <span className='p-3'>Staff Attendance</span>
+
+                <div className="p-3 border-bottom fa-16 fw-bold d-flex justify-content-between align-items-center">
+                    <span className="text-primary text-uppercase ps-3">{inputValues?.Report_Type_Id ? 'Modify Report Template' : 'Report Templates Creation'}</span>
+                    <Button variant='outlined' onClick={() => nav(-1)} startIcon={<KeyboardArrowLeft />}>Back</Button>
                 </div>
 
                 <CardContent>
@@ -443,8 +469,8 @@ const ReportTemplateCreation = () => {
                                                                     {inputs?.Join_First_Table_Id && (
                                                                         [...inputValues?.tables]?.find(table => (
                                                                             isEqualNumber(table?.Table_Id, inputs?.Join_First_Table_Id)
-                                                                        ))?.columns?.map(joinKeys => isEqualNumber(joinKeys?.IS_Join_Key, 1) && (
-                                                                            <option value={joinKeys?.Column_Name}>{joinKeys?.Column_Name}</option>
+                                                                        ))?.columns?.map((joinKeys, joinInd) => isEqualNumber(joinKeys?.IS_Join_Key, 1) && (
+                                                                            <option key={joinInd} value={joinKeys?.Column_Name}>{joinKeys?.Column_Name}</option>
                                                                         ))
                                                                     )}
                                                                 </select>
@@ -463,14 +489,13 @@ const ReportTemplateCreation = () => {
                                                                     {inputs?.Join_Second_Table_Id && (
                                                                         [...inputValues?.tables]?.find(table => (
                                                                             isEqualNumber(table?.Table_Id, inputs?.Join_Second_Table_Id)
-                                                                        ))?.columns?.map(joinKeys => isEqualNumber(joinKeys?.IS_Join_Key, 1) && (
-                                                                            <option value={joinKeys?.Column_Name}>{joinKeys?.Column_Name}</option>
+                                                                        ))?.columns?.map((joinKeys, joinInd) => isEqualNumber(joinKeys?.IS_Join_Key, 1) && (
+                                                                            <option key={joinInd} value={joinKeys?.Column_Name}>{joinKeys?.Column_Name}</option>
                                                                         ))
                                                                     )}
                                                                 </select>
                                                             </td>
                                                         </tr>
-                                                        
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -491,7 +516,7 @@ const ReportTemplateCreation = () => {
                         <Button
                             // onClick={() => setInputValues(pre => ({ ...pre, previewDialog: false }))}
                             type='submit'
-                            startIcon={<ArrowBackIosNewOutlined />}
+                            startIcon={<Save />}
                         >
                             Submit
                         </Button>
