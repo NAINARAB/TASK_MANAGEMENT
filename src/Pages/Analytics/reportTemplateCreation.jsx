@@ -343,8 +343,8 @@ const ReportTemplateCreation = () => {
                                 startIcon={<RemoveRedEyeOutlined />}
                                 disabled={!inputValues?.reportName || tablesSelected === 0 || columnsSelected <= 4}
                                 onClick={
-                                    columnsSelected > 25
-                                        ? () => toast.warn('Maximum 25 Column limit exceeded')
+                                    columnsSelected > 50
+                                        ? () => toast.warn('Maximum 50 Column limit exceeded')
                                         : () => openPreviewDialog()
                                 }
                             >

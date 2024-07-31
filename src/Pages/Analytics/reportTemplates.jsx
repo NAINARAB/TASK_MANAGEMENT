@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import api from '../../API';
-import { Button, Card, CardContent, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import { ArrowBackIosNewOutlined, Edit, ExpandLess, ExpandMore, Save, Visibility } from '@mui/icons-material';
+import { Button, Card, CardContent, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Popover } from '@mui/material';
+import { ArrowBackIosNewOutlined, Edit, ExpandLess, ExpandMore, Visibility, List, Delete, FilterAlt, Launch } from '@mui/icons-material';
 import { isEqualNumber, UTCDateWithTime } from '../../Components/functions';
 import { MyContext } from '../../Components/context/contextProvider';
 import { useNavigate } from 'react-router-dom'
 import DynamicMuiTable from '../../Components/dynamicMuiTable';
 import { CurretntCompany } from '../../Components/context/currentCompnayProvider';
+import { toast } from 'react-toastify';
 
 
 const ReportTemplates = () => {
@@ -16,11 +17,14 @@ const ReportTemplates = () => {
         search: '',
         openFilterDialog: false,
         filterTablesAndColumns: {},
+        deleteConfirmationDialog: false,
+        preFilterDialog: false,
     }
     const [localVariable, setLocalVariable] = useState(variableState);
     const { contextObj } = useContext(MyContext);
-    // const [filters, setFilters] = useState({})
+    const [filters, setFilters] = useState({})
     const nav = useNavigate();
+    const [reload, setReload] = useState(false)
 
     useEffect(() => {
         fetch(`${api}reportTemplate`)
@@ -31,10 +35,89 @@ const ReportTemplates = () => {
                 }
             }).catch(e => console.log(e))
             .finally(() => setCurrentCompany({ ...currentCompany, CompanySettings: true }))
-    }, [])
+    }, [reload])
+
+    const handleFilterChange = (column, value) => {
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            [column]: value,
+        }));
+    };
+
+    const renderFilter = (column) => {
+        const { Column_Name, Column_Data_Type } = column;
+        if (Column_Data_Type === 'number') {
+            return (
+                <div className='d-flex justify-content-between'>
+                    <input
+                        placeholder="Min"
+                        type="number"
+                        className="cus-inpt"
+                        value={filters[Column_Name]?.min ?? ''}
+                        onChange={(e) => handleFilterChange(Column_Name, {
+                            type: 'range',
+                            ...filters[Column_Name],
+                            min: e.target.value ? parseFloat(e.target.value) : undefined
+                        })}
+                    />
+                    <input
+                        placeholder="Max"
+                        type="number"
+                        className="cus-inpt"
+                        value={filters[Column_Name]?.max ?? ''}
+                        onChange={(e) => handleFilterChange(Column_Name, {
+                            type: 'range',
+                            ...filters[Column_Name],
+                            max: e.target.value ? parseFloat(e.target.value) : undefined
+                        })}
+                    />
+                </div>
+            );
+        } else if (Column_Data_Type === 'date') {
+            return (
+                <div className='d-flex justify-content-between'>
+                    <input
+                        placeholder="Start Date"
+                        type="date"
+                        className="cus-inpt"
+                        value={filters[Column_Name]?.value?.start ?? ''}
+                        onChange={(e) => handleFilterChange(Column_Name, {
+                            type: 'date',
+                            value: { ...filters[Column_Name]?.value, start: e.target.value || undefined }
+                        })}
+                    />
+                    <input
+                        placeholder="End Date"
+                        type="date"
+                        className="cus-inpt"
+                        value={filters[Column_Name]?.value?.end ?? ''}
+                        onChange={(e) => handleFilterChange(Column_Name, {
+                            type: 'date',
+                            value: { ...filters[Column_Name]?.value, end: e.target.value || undefined }
+                        })}
+                    />
+                </div>
+            );
+        } else if (Column_Data_Type === 'string') {
+            return (
+                <input
+                    type="text"
+                    placeholder='Search...'
+                    className='cus-inpt'
+                    value={filters[Column_Name]?.value ?? ''}
+                    onChange={e => handleFilterChange(Column_Name, {
+                        type: 'textCompare',
+                        value: String(e.target.value).toLowerCase() || ''
+                    })}
+                />
+            )
+        }
+    };
 
     const ExpandableRow = ({ o, i }) => {
         const [open, setOpen] = useState(false);
+        const [anchorEl, setAnchorEl] = useState(null);
+
         const dataToForward = {
             Report_Type_Id: o?.Report_Type_Id,
             reportName: o?.Report_Name,
@@ -56,6 +139,17 @@ const ReportTemplates = () => {
             }))
         }
 
+        const popOverOpen = Boolean(anchorEl);
+        const id = popOverOpen ? o?.Report_Name : undefined;
+
+        const handleClick = (event) => {
+            setAnchorEl(event.currentTarget);
+        };
+
+        const handleClose = () => {
+            setAnchorEl(null);
+        };
+
         return (
             <>
                 <tr>
@@ -68,28 +162,77 @@ const ReportTemplates = () => {
                     <td className="border fa-13 text-center vctr">{o?.CreatedByGet}</td>
                     <td className="border fa-13 text-center vctr">{o?.CreatedAt ? UTCDateWithTime(o?.CreatedAt) : ' - '}</td>
                     <td className="border fa-13 text-center vctr">
-                        <IconButton
-                            size='small'
-                            onClick={() => {
-                                setLocalVariable(pre => ({
-                                    ...pre,
-                                    filterTablesAndColumns: dataToForward,
-                                    openFilterDialog: true,
-                                })); console.log(dataToForward)
-                            }}
-                            disabled={!currentCompany?.id}
-                        >
-                            <Visibility  />
-                        </IconButton>
-                        {/* <IconButton
-                            size='small'
-                            onClick={() => nav('create', { state: { ReportState: dataToForward } })}
-                        >
-                            <Edit />
-                        </IconButton> */}
+
                         <IconButton size='small' onClick={() => setOpen(pre => !pre)}>
                             {open ? <ExpandLess className='text-primary' /> : <ExpandMore />}
                         </IconButton>
+
+                        <IconButton aria-describedby={id} onClick={handleClick}>
+                            <List />
+                        </IconButton>
+
+                        <Popover
+                            id={id}
+                            open={popOverOpen}
+                            anchorEl={anchorEl}
+                            onClose={handleClose}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'left',
+                            }}
+                        >
+                            <MenuList>
+
+                                <MenuItem
+                                    onClick={() => {
+                                        setLocalVariable(pre => ({
+                                            ...pre,
+                                            filterTablesAndColumns: dataToForward,
+                                            openFilterDialog: true,
+                                        }));
+                                    }}
+                                    disabled={!currentCompany?.id}
+                                >
+                                    <ListItemIcon><Visibility fontSize="small" /></ListItemIcon>
+                                    <ListItemText>OPEN</ListItemText>
+                                </MenuItem>
+
+                                <MenuItem
+                                    onClick={
+                                        () => {
+                                            setLocalVariable(pre => ({
+                                                ...pre,
+                                                filterTablesAndColumns: dataToForward,
+                                                preFilterDialog: true,
+                                            }));
+                                            setFilters({})
+                                        }
+                                    }
+                                >
+                                    <ListItemIcon><FilterAlt fontSize="small" /></ListItemIcon>
+                                    <ListItemText>FILTERS</ListItemText>
+                                </MenuItem>
+
+                                <MenuItem
+                                    onClick={() => nav('create', { state: { ReportState: dataToForward } })}
+                                >
+                                    <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
+                                    <ListItemText>EDIT</ListItemText>
+                                </MenuItem>
+
+                                <MenuItem
+                                    onClick={() => setLocalVariable(pre => ({ ...pre, deleteConfirmationDialog: true, filterTablesAndColumns: dataToForward }))}
+                                >
+                                    <ListItemIcon><Delete fontSize="small" color='error' /></ListItemIcon>
+                                    <ListItemText>DELETE</ListItemText>
+                                </MenuItem>
+
+                            </MenuList>
+                        </Popover>
 
                     </td>
                 </tr>
@@ -121,15 +264,15 @@ const ReportTemplates = () => {
                                                         )}
                                                         <td
                                                             className={`
-                                                                border fa-13 
+                                                                border fa-13 vctr
                                                                 ${Boolean(Number(column?.IS_Default)) ? ' blue-text ' : ''}
                                                                 ${Boolean(Number(column?.IS_Join_Key)) ? ' fw-bold ' : ''}
                                                                 `}
                                                         >
                                                             {column?.Column_Name}
                                                         </td>
-                                                        <td className="border fa-13">{column?.Column_Data_Type}</td>
-                                                        <td className="border fa-13">{column?.Order_By}</td>
+                                                        <td className="border fa-13 vctr">{column?.Column_Data_Type}</td>
+                                                        <td className="border fa-13 vctr">{column?.Order_By}</td>
                                                     </tr>
                                                 ))}
                                             </React.Fragment>
@@ -148,82 +291,37 @@ const ReportTemplates = () => {
         setLocalVariable(pre => ({ ...pre, openFilterDialog: false, filterTablesAndColumns: {} }))
     }
 
-    // const handleFilterChange = (column, value) => {
-    //     setFilters(prevFilters => ({
-    //         ...prevFilters,
-    //         [column]: value,
-    //     }));
-    // };
+    const closeDeleteConfirmationDialog = () => {
+        setLocalVariable(pre => ({ ...pre, deleteConfirmationDialog: false, filterTablesAndColumns: {} }))
+    }
 
-    // const renderFilter = (column) => {
-    //     const { Column_Name, Column_Data_Type } = column;
-    //     if (Column_Data_Type === 'number') {
-    //         return (
-    //             <div className='d-flex justify-content-between px-2'>
-    //                 <input
-    //                     placeholder="Min"
-    //                     type="number"
-    //                     className="cus-inpt"
-    //                     value={filters[Column_Name]?.min ?? ''}
-    //                     onChange={(e) => handleFilterChange(Column_Name, {
-    //                         type: 'range',
-    //                         ...filters[Column_Name],
-    //                         min: e.target.value ? parseFloat(e.target.value) : undefined
-    //                     })}
-    //                 />
-    //                 <input
-    //                     placeholder="Max"
-    //                     type="number"
-    //                     className="cus-inpt"
-    //                     value={filters[Column_Name]?.max ?? ''}
-    //                     onChange={(e) => handleFilterChange(Column_Name, {
-    //                         type: 'range',
-    //                         ...filters[Column_Name],
-    //                         max: e.target.value ? parseFloat(e.target.value) : undefined
-    //                     })}
-    //                 />
-    //             </div>
-    //         );
-    //     } else if (Column_Data_Type === 'date') {
-    //         return (
-    //             <div className='d-flex justify-content-between px-2'>
-    //                 <input
-    //                     placeholder="Start Date"
-    //                     type="date"
-    //                     className="cus-inpt"
-    //                     value={filters[Column_Name]?.value?.start ?? ''}
-    //                     onChange={(e) => handleFilterChange(Column_Name, {
-    //                         type: 'date',
-    //                         value: { ...filters[Column_Name]?.value, start: e.target.value || undefined }
-    //                     })}
-    //                 />
-    //                 <input
-    //                     placeholder="End Date"
-    //                     type="date"
-    //                     className="cus-inpt"
-    //                     value={filters[Column_Name]?.value?.end ?? ''}
-    //                     onChange={(e) => handleFilterChange(Column_Name, {
-    //                         type: 'date',
-    //                         value: { ...filters[Column_Name]?.value, end: e.target.value || undefined }
-    //                     })}
-    //                 />
-    //             </div>
-    //         );
-    //     } else if (Column_Data_Type === 'string') {
-    //         return (
-    //             <input
-    //                 type="text"
-    //                 placeholder='Search Like...'
-    //                 className='cus-inpt'
-    //                 value={filters[Column_Name]?.value ?? ''}
-    //                 onChange={e => handleFilterChange(Column_Name, {
-    //                     type: 'textCompare',
-    //                     value: { ...filters[Column_Name]?.value, searchText: e.target.value || '' }
-    //                 })}
-    //             />
-    //         )
-    //     }
-    // };
+    const closeFilterDialog = () => {
+        setLocalVariable(pre => ({ ...pre, preFilterDialog: false }));
+        setFilters({})
+    }
+
+    const deleteTemplate = () => {
+        setLocalVariable(pre => ({ ...pre, deleteConfirmationDialog: false }))
+        fetch(`${api}reportTemplate`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': "application/json",
+            },
+            body: JSON.stringify({
+                Report_Type_Id: localVariable?.filterTablesAndColumns?.Report_Type_Id
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data?.success) {
+                    toast.success(data.message)
+                    setReload(pre => !pre)
+                } else {
+                    toast.error(data.message)
+                }
+            }).catch(e => console.log(e))
+            .finally(() => setLocalVariable(pre => ({ ...pre, filterTablesAndColumns: {} })))
+    }
 
     return (
         <>
@@ -256,7 +354,7 @@ const ReportTemplates = () => {
                                 <thead>
                                     <tr>
                                         {['SNo', 'Report Name', 'Tables', 'Columns', 'Created-By', 'Created-At', 'Action'].map((o, i) => (
-                                            <td className="border fa-14 text-center" key={i}>{o}</td>
+                                            <td className="border fa-14 text-center" key={i} style={{ backgroundColor: '#EDF0F7' }}>{o}</td>
                                         ))}
                                     </tr>
                                 </thead>
@@ -284,10 +382,56 @@ const ReportTemplates = () => {
                 onClose={closeDialog}
                 fullScreen
             >
-                {/* <DialogTitle>Filters For <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span> - Report</DialogTitle> */}
+                <DialogTitle>Report <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span></DialogTitle>
+                <DialogContent>
+                    {(localVariable?.filterTablesAndColumns?.Report_Type_Id && currentCompany?.id) && (
+                        <DynamicMuiTable reportId={localVariable?.filterTablesAndColumns?.Report_Type_Id} company={currentCompany?.id} queryFilters={filters} />
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={closeDialog}
+                        startIcon={<ArrowBackIosNewOutlined />}
+                    >
+                        Back
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={localVariable?.deleteConfirmationDialog}
+                onClose={closeDeleteConfirmationDialog}
+                fullWidth maxWidth='sm'
+            >
+                <DialogTitle>Confirmation</DialogTitle>
+                <DialogContent>
+                    Do you want to delete the Template <span className='blue-text'>{localVariable?.filterTablesAndColumns?.reportName}</span> permanently
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={closeDeleteConfirmationDialog}
+                    >
+                        cancel
+                    </Button>
+                    <Button
+                        onClick={deleteTemplate}
+                        startIcon={<Delete />}
+                        variant='outlined'
+                        color='error'
+                    >
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={localVariable?.preFilterDialog}
+                onClose={closeFilterDialog}
+                fullWidth maxWidth='lg'
+            >
                 <DialogTitle>Filters For <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span> - Report</DialogTitle>
                 <DialogContent>
-                    {/* {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
+                    {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
                         <div className="p-2 mb-3" key={i}>
                             <h6 className='blue-text mb-2 border-bottom'>{table?.AliasName}</h6>
 
@@ -304,27 +448,23 @@ const ReportTemplates = () => {
                                     ))}
                             </div>
                         </div>
-                    ))} */}
-                    {(localVariable?.filterTablesAndColumns?.Report_Type_Id && currentCompany?.id) && (
-                        <DynamicMuiTable reportId={localVariable?.filterTablesAndColumns?.Report_Type_Id} company={currentCompany?.id} />
-                    )}
+                    ))}
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={closeDialog}
-                        startIcon={<ArrowBackIosNewOutlined />}
+                        onClick={closeFilterDialog}
                     >
-                        Back
+                        cancel
                     </Button>
                     <Button
-                        // onClick={() => setInputValues(pre => ({ ...pre, previewDialog: false }))}
-                        startIcon={<Save />}
+                        onClick={() => setLocalVariable(pre => ({ ...pre, openFilterDialog: true, preFilterDialog: false }))}
+                        startIcon={<Launch />}
+                        variant='outlined'
                     >
-                        Submit
+                        Open report
                     </Button>
                 </DialogActions>
             </Dialog>
-
         </>
     )
 }

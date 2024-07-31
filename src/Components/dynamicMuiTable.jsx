@@ -60,7 +60,7 @@ const aggregations = (Fied_Data, Field_Name) => {
 const icon = <CheckBoxOutlineBlank fontSize="small" />;
 const checkedIcon = <CheckBox fontSize="small" />;
 
-const DynamicMuiTable = ({ reportId, company }) => {
+const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
     const [dispColmn, setDispColmn] = useState([]);
     const [dataArray, setDataArray] = useState([]);
     const [columns, setColumns] = useState([]);
@@ -68,7 +68,6 @@ const DynamicMuiTable = ({ reportId, company }) => {
     const [filteredData, setFilteredData] = useState(dataArray);
     const filterCount = Object.keys(filters).length;
     const showData = (filterCount > 0) ? filteredData : dataArray;
-
 
     useEffect(() => {
         fetch(`${api}reportTemplate?ReportId=${reportId}`)
@@ -101,7 +100,6 @@ const DynamicMuiTable = ({ reportId, company }) => {
                         const allColumns = strucre.tables?.reduce((colArr, table) => {
                             return colArr.concat(table.columns);
                         }, []);
-                        console.log(allColumns)
                         setColumns(allColumns);
                     }
                 }
@@ -111,16 +109,19 @@ const DynamicMuiTable = ({ reportId, company }) => {
     useEffect(() => {
         if (reportId) {
             fetch(`${api}reportTemplate/executeQuery?ReportID=${reportId}`, {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
-                    'Db': company
-                }
+                    'Db': company,
+                },
+                body: JSON.stringify({
+                    filterReq: queryFilters,
+                    ReportID: reportId
+                })
             })
                 .then(res => res.json())
                 .then(data => {
                     if (data?.success) {
-                        console.log(data?.data[0])
                         setDataArray(data?.data);
                     }
                 }).catch(e => console.log(e))
@@ -128,7 +129,7 @@ const DynamicMuiTable = ({ reportId, company }) => {
     }, [company, reportId])
 
     useEffect(() => {
-        const displayColumns = [...columns]
+        const displayColumns = [...columns].sort((a, b) => (a.Order_By && b.Order_By) ? a.Order_By - b.Order_By : b.Order_By - a.Order_By)
 
         const muiColumns = displayColumns.filter(column =>
             !Boolean(Number(column?.IS_Default)) && !Boolean(Number(column?.IS_Join_Key))
