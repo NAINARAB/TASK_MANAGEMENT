@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import api from '../../API';
-import { Button, Card, CardContent, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ListItemIcon, ListItemText, MenuItem, MenuList, Popover } from '@mui/material';
-import { ArrowBackIosNewOutlined, Edit, ExpandLess, ExpandMore, Visibility, List, Delete, FilterAlt, Launch } from '@mui/icons-material';
+import {
+    Button, Card, CardContent, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tab, Tabs, Box, Typography,
+    ListItemIcon, ListItemText, MenuItem, MenuList, Popover, TableContainer, Table, TableBody, TableCell, TableHead, TableRow, Paper
+} from '@mui/material';
+import { ArrowBackIosNewOutlined, Edit, ExpandLess, ExpandMore, Visibility, List, Delete, FilterAlt, Launch, Close } from '@mui/icons-material';
 import { isEqualNumber, UTCDateWithTime } from '../../Components/functions';
 import { MyContext } from '../../Components/context/contextProvider';
 import { useNavigate } from 'react-router-dom'
@@ -9,6 +12,26 @@ import DynamicMuiTable from '../../Components/dynamicMuiTable';
 import { CurretntCompany } from '../../Components/context/currentCompnayProvider';
 import { toast } from 'react-toastify';
 
+
+const TabPanel = (props) => {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`tabpanel-${index}`}
+            aria-labelledby={`tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+                <Box p={3}>
+                    <Typography>{children}</Typography>
+                </Box>
+            )}
+        </div>
+    );
+};
 
 const ReportTemplates = () => {
     const [templates, setTemplates] = useState([]);
@@ -25,6 +48,11 @@ const ReportTemplates = () => {
     const [filters, setFilters] = useState({})
     const nav = useNavigate();
     const [reload, setReload] = useState(false)
+    const [selectedTab, setSelectedTab] = useState(0);
+
+    const handleTabChange = (event, newValue) => {
+        setSelectedTab(newValue);
+    };
 
     useEffect(() => {
         fetch(`${api}reportTemplate`)
@@ -52,7 +80,7 @@ const ReportTemplates = () => {
                     <input
                         placeholder="Min"
                         type="number"
-                        className="cus-inpt"
+                        className="cus-inpt me-1"
                         value={filters[Column_Name]?.min ?? ''}
                         onChange={(e) => handleFilterChange(Column_Name, {
                             type: 'range',
@@ -63,7 +91,7 @@ const ReportTemplates = () => {
                     <input
                         placeholder="Max"
                         type="number"
-                        className="cus-inpt"
+                        className="cus-inpt ms-1"
                         value={filters[Column_Name]?.max ?? ''}
                         onChange={(e) => handleFilterChange(Column_Name, {
                             type: 'range',
@@ -75,11 +103,11 @@ const ReportTemplates = () => {
             );
         } else if (Column_Data_Type === 'date') {
             return (
-                <div className='d-flex justify-content-between'>
+                <div className='d-flex justify-content-between flex-wrap'>
                     <input
                         placeholder="Start Date"
                         type="date"
-                        className="cus-inpt"
+                        className="cus-inpt w-auto flex-grow-1 me-1 my-1"
                         value={filters[Column_Name]?.value?.start ?? ''}
                         onChange={(e) => handleFilterChange(Column_Name, {
                             type: 'date',
@@ -89,7 +117,7 @@ const ReportTemplates = () => {
                     <input
                         placeholder="End Date"
                         type="date"
-                        className="cus-inpt"
+                        className="cus-inpt w-auto flex-grow-1 ms-1 my-1"
                         value={filters[Column_Name]?.value?.end ?? ''}
                         onChange={(e) => handleFilterChange(Column_Name, {
                             type: 'date',
@@ -152,16 +180,16 @@ const ReportTemplates = () => {
 
         return (
             <>
-                <tr>
-                    <td className="border fa-13 text-center vctr">{i}</td>
-                    <td className="border fa-13 text-center vctr">{o?.Report_Name}</td>
-                    <td className="border fa-13 text-center vctr">{o?.tablesList?.length}</td>
-                    <td className="border fa-13 text-center vctr">
+                <TableRow hover={true}>
+                    <TableCell className=" fa-13 text-center vctr">{i}</TableCell >
+                    <TableCell className=" fa-13 text-center vctr">{o?.Report_Name}</TableCell >
+                    <TableCell className=" fa-13 text-center vctr">{o?.tablesList?.length}</TableCell >
+                    <TableCell className=" fa-13 text-center vctr">
                         {o?.tablesList?.reduce((sum, item) => sum += Number(item?.columnsList?.length), 0)}
-                    </td>
-                    <td className="border fa-13 text-center vctr">{o?.CreatedByGet}</td>
-                    <td className="border fa-13 text-center vctr">{o?.CreatedAt ? UTCDateWithTime(o?.CreatedAt) : ' - '}</td>
-                    <td className="border fa-13 text-center vctr">
+                    </TableCell >
+                    <TableCell className=" fa-13 text-center vctr">{o?.CreatedByGet}</TableCell >
+                    <TableCell className=" fa-13 text-center vctr">{o?.CreatedAt ? UTCDateWithTime(o?.CreatedAt) : ' - '}</TableCell >
+                    <TableCell className=" fa-13 text-center vctr">
 
                         <IconButton size='small' onClick={() => setOpen(pre => !pre)}>
                             {open ? <ExpandLess className='text-primary' /> : <ExpandMore />}
@@ -188,14 +216,19 @@ const ReportTemplates = () => {
                             <MenuList>
 
                                 <MenuItem
-                                    onClick={() => {
-                                        setLocalVariable(pre => ({
-                                            ...pre,
-                                            filterTablesAndColumns: dataToForward,
-                                            openFilterDialog: true,
-                                        }));
-                                    }}
-                                    disabled={!currentCompany?.id}
+                                    onClick={!currentCompany?.id
+                                        ? () => toast.warn('Select Company!')
+                                        : () => {
+                                            setLocalVariable(pre => ({
+                                                ...pre,
+                                                filterTablesAndColumns: dataToForward,
+                                                openFilterDialog: true,
+                                            }));
+                                            setSelectedTab(0);
+                                            setFilters({})
+                                        }
+                                    }
+                                // disabled={!currentCompany?.id}
                                 >
                                     <ListItemIcon><Visibility fontSize="small" /></ListItemIcon>
                                     <ListItemText>OPEN</ListItemText>
@@ -203,14 +236,17 @@ const ReportTemplates = () => {
 
                                 <MenuItem
                                     onClick={
-                                        () => {
-                                            setLocalVariable(pre => ({
-                                                ...pre,
-                                                filterTablesAndColumns: dataToForward,
-                                                preFilterDialog: true,
-                                            }));
-                                            setFilters({})
-                                        }
+                                        !currentCompany?.id
+                                            ? () => toast.warn('Select Company!')
+                                            : () => {
+                                                setLocalVariable(pre => ({
+                                                    ...pre,
+                                                    filterTablesAndColumns: dataToForward,
+                                                    preFilterDialog: true,
+                                                }));
+                                                setFilters({});
+                                                setSelectedTab(0);
+                                            }
                                     }
                                 >
                                     <ListItemIcon><FilterAlt fontSize="small" /></ListItemIcon>
@@ -234,11 +270,11 @@ const ReportTemplates = () => {
                             </MenuList>
                         </Popover>
 
-                    </td>
-                </tr>
+                    </TableCell >
+                </TableRow >
 
-                <tr>
-                    <td colSpan={7} className="p-0 border-0">
+                <TableRow >
+                    <TableCell colSpan={7} className="p-0 border-0">
                         <Collapse in={open} timeout="auto" className='py-3' unmountOnExit>
                             <div className="table-responsive">
                                 <table className="table">
@@ -281,8 +317,8 @@ const ReportTemplates = () => {
                                 </table>
                             </div>
                         </Collapse>
-                    </td>
-                </tr>
+                    </TableCell >
+                </TableRow >
             </>
         );
     }
@@ -337,7 +373,7 @@ const ReportTemplates = () => {
 
                 <CardContent>
                     {templates?.length > 0 && (
-                        <div className="table-responsive" style={{ maxHeight: '72dvh', overflow: 'auto' }}>
+                        <TableContainer component={Paper} sx={{ maxHeight: '72dvh' }}>
 
                             <div className="d-flex justify-content-end mb-3">
                                 <input
@@ -349,17 +385,17 @@ const ReportTemplates = () => {
                                 />
                             </div>
 
-                            <table className="table m-0">
+                            <Table stickyHeader size="small">
 
-                                <thead>
-                                    <tr>
+                                <TableHead>
+                                    <TableRow>
                                         {['SNo', 'Report Name', 'Tables', 'Columns', 'Created-By', 'Created-At', 'Action'].map((o, i) => (
-                                            <td className="border fa-14 text-center" key={i} style={{ backgroundColor: '#EDF0F7' }}>{o}</td>
+                                            <TableCell className="text-center" key={i} style={{ backgroundColor: '#EDF0F7' }}>{o}</TableCell>
                                         ))}
-                                    </tr>
-                                </thead>
+                                    </TableRow>
+                                </TableHead>
 
-                                <tbody>
+                                <TableBody>
                                     {!localVariable?.search ? (
                                         templates?.map((o, i) => (
                                             <ExpandableRow o={o} i={i + 1} key={i} />
@@ -369,10 +405,10 @@ const ReportTemplates = () => {
                                             String(fil?.Report_Name).toLowerCase().includes(localVariable.search)
                                         ).map((o, i) => <ExpandableRow o={o} i={i + 1} key={i} />)
                                     )}
-                                </tbody>
+                                </TableBody>
 
-                            </table>
-                        </div>
+                            </Table>
+                        </TableContainer>
                     )}
                 </CardContent>
             </Card>
@@ -382,7 +418,16 @@ const ReportTemplates = () => {
                 onClose={closeDialog}
                 fullScreen
             >
-                <DialogTitle>Report <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span></DialogTitle>
+                <DialogTitle className='d-flex justify-content-between align-items-center fa-16'>
+                    <span>
+                        Report - <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span>
+                    </span>
+                    <span>
+                        <IconButton onClick={closeDialog} color='error' className=' shadow-lg'>
+                            <Close />
+                        </IconButton>
+                    </span>
+                </DialogTitle>
                 <DialogContent>
                     {(localVariable?.filterTablesAndColumns?.Report_Type_Id && currentCompany?.id) && (
                         <DynamicMuiTable reportId={localVariable?.filterTablesAndColumns?.Report_Type_Id} company={currentCompany?.id} queryFilters={filters} />
@@ -427,11 +472,20 @@ const ReportTemplates = () => {
             <Dialog
                 open={localVariable?.preFilterDialog}
                 onClose={closeFilterDialog}
-                fullWidth maxWidth='lg'
+                fullWidth maxWidth='md'
             >
-                <DialogTitle>Filters For <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span> - Report</DialogTitle>
+                <DialogTitle className='d-flex justify-content-between'>
+                    <span>
+                        Filters For <span className="blue-text">{localVariable?.filterTablesAndColumns?.reportName}</span> - Report
+                    </span>
+                    <span>
+                        <IconButton onClick={closeFilterDialog} color='error' className='shadow-lg '>
+                            <Close />
+                        </IconButton>
+                    </span>
+                </DialogTitle>
                 <DialogContent>
-                    {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
+                    {/* {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
                         <div className="p-2 mb-3" key={i}>
                             <h6 className='blue-text mb-2 border-bottom'>{table?.AliasName}</h6>
 
@@ -448,6 +502,27 @@ const ReportTemplates = () => {
                                     ))}
                             </div>
                         </div>
+                    ))} */}
+                    <Tabs value={selectedTab} onChange={handleTabChange}>
+                        {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
+                            <Tab label={table?.AliasName} key={i} />
+                        ))}
+                    </Tabs>
+                    {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
+                        <TabPanel value={selectedTab} index={i} key={i}>
+                            <div className="row">
+                                {table?.columns?.map((column, ii) => (
+                                    !Boolean(Number(column?.IS_Default)) &&
+                                    !Boolean(Number(column?.IS_Join_Key)) &&
+                                    (
+                                        <div className="p-2 col-md-6 " key={ii}>
+                                            <label className='mb-2 fw-bold text-muted'>{column?.Column_Name}</label>
+                                            {renderFilter(column)}
+                                        </div>
+                                    )
+                                ))}
+                            </div>
+                        </TabPanel>
                     ))}
                 </DialogContent>
                 <DialogActions>
@@ -459,7 +534,7 @@ const ReportTemplates = () => {
                     <Button
                         onClick={() => setLocalVariable(pre => ({ ...pre, openFilterDialog: true, preFilterDialog: false }))}
                         startIcon={<Launch />}
-                        variant='outlined'
+                        variant='contained'
                     >
                         Open report
                     </Button>
