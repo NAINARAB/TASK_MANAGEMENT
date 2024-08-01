@@ -191,12 +191,12 @@ const ReportTemplates = () => {
                     <TableCell className=" fa-13 text-center vctr">{o?.CreatedAt ? UTCDateWithTime(o?.CreatedAt) : ' - '}</TableCell >
                     <TableCell className=" fa-13 text-center vctr">
 
-                        <IconButton size='small' onClick={() => setOpen(pre => !pre)}>
-                            {open ? <ExpandLess className='text-primary' /> : <ExpandMore />}
-                        </IconButton>
-
                         <IconButton aria-describedby={id} onClick={handleClick}>
                             <List />
+                        </IconButton>
+
+                        <IconButton size='small' onClick={() => setOpen(pre => !pre)}>
+                            {open ? <ExpandLess className='text-primary' /> : <ExpandMore />}
                         </IconButton>
 
                         <Popover
@@ -390,7 +390,7 @@ const ReportTemplates = () => {
                                 <TableHead>
                                     <TableRow>
                                         {['SNo', 'Report Name', 'Tables', 'Columns', 'Created-By', 'Created-At', 'Action'].map((o, i) => (
-                                            <TableCell className="text-center" key={i} style={{ backgroundColor: '#EDF0F7' }}>{o}</TableCell>
+                                            <TableCell className="text-center py-2" key={i} style={{ backgroundColor: '#EDF0F7' }}>{o}</TableCell>
                                         ))}
                                     </TableRow>
                                 </TableHead>
@@ -485,24 +485,6 @@ const ReportTemplates = () => {
                     </span>
                 </DialogTitle>
                 <DialogContent>
-                    {/* {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
-                        <div className="p-2 mb-3" key={i}>
-                            <h6 className='blue-text mb-2 border-bottom'>{table?.AliasName}</h6>
-
-                            <div className="row">
-                                {table?.columns?.map((column, ii) => (
-                                    // (column?.Column_Data_Type === 'date' || column?.Column_Data_Type === 'number') &&
-                                    !Boolean(Number(column?.IS_Default)) &&
-                                    !Boolean(Number(column?.IS_Join_Key))
-                                ) && (
-                                        <div className="p-2 col-xxl-3 col-lg-4 col-md-6 " key={ii}>
-                                            <label className='mb-2 fw-bold text-muted'>{column?.Column_Name}</label>
-                                            {renderFilter(column)}
-                                        </div>
-                                    ))}
-                            </div>
-                        </div>
-                    ))} */}
                     <Tabs value={selectedTab} onChange={handleTabChange}>
                         {localVariable?.filterTablesAndColumns?.tables?.map((table, i) => (
                             <Tab label={table?.AliasName} key={i} />
