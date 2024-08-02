@@ -50,8 +50,6 @@ const ReportTemplateCreation = () => {
         </span>
     )
 
-    console.log(locationState)
-
     useEffect(() => {
         const stateValue = locationState?.ReportState;
         if (isValidObject(stateValue)) {
@@ -74,8 +72,6 @@ const ReportTemplateCreation = () => {
                 }
             }).catch(e => console.log(e))
     }, []);
-
-    console.log(inputValues)
 
     const handleTableCheck = (tableName, checked, aliasName) => {
         setInputValues(prev => {
@@ -215,6 +211,17 @@ const ReportTemplateCreation = () => {
     }
 
     const saveTemplate = () => {
+        const validateSet = new Set();
+        inputValues.tableJoins?.map(item => {
+            validateSet.add(item.Join_First_Table_Id);
+            validateSet.add(item.Join_Second_Table_Id);
+            return
+        })
+        console.log(validateSet.size);
+        if (validateSet.size !== (inputValues.tableJoins.length + 1)) {
+            return toast.error('Invalid table joins')
+        }
+
         setInputValues(pre => ({ ...pre, previewDialog: false }))
         fetch(`${api}reportTemplate`, {
             method: inputValues?.Report_Type_Id ? 'PUT' : 'POST',
