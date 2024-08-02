@@ -92,7 +92,7 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
                                     Order_By: column?.Order_By,
                                     Table_Id: column?.Table_Id,
                                     isVisible: true,
-                                    accessColumnName: `${table?.Table_Accronym}.${column?.Column_Name}`
+                                    accessColumnName: `${table?.Table_Accronym}_${column?.Column_Name}`
                                 }))
                             }))
                         }
@@ -134,7 +134,7 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
             !Boolean(Number(column?.IS_Default)) && !Boolean(Number(column?.IS_Join_Key))
         ).map(column => ({
             header: column?.Column_Name?.replace(/_/g, ' '),
-            accessorKey: column?.Column_Name,
+            accessorKey: column?.accessColumnName,
             sortable: true,
             size: 150,
             // ...aggregations(column?.Column_Data_Type, column?.Column_Name),
@@ -266,21 +266,21 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
     const applyFilters = () => {
         let filtered = [...dataArray];
         for (const column of columns) {
-            if (filters[column.Column_Name]) {
-                if (filters[column.Column_Name].type === 'range') {
-                    const { min, max } = filters[column.Column_Name];
+            if (filters[column.accessColumnName]) {
+                if (filters[column.accessColumnName].type === 'range') {
+                    const { min, max } = filters[column.accessColumnName];
                     filtered = filtered.filter(item => {
-                        const value = item[column.Column_Name];
+                        const value = item[column.accessColumnName];
                         return (min === undefined || value >= min) && (max === undefined || value <= max);
                     });
-                } else if (filters[column.Column_Name].type === 'date') {
-                    const { start, end } = filters[column.Column_Name].value;
+                } else if (filters[column.accessColumnName].type === 'date') {
+                    const { start, end } = filters[column.accessColumnName].value;
                     filtered = filtered.filter(item => {
-                        const dateValue = new Date(item[column.Column_Name]);
+                        const dateValue = new Date(item[column.accessColumnName]);
                         return (start === undefined || dateValue >= new Date(start)) && (end === undefined || dateValue <= new Date(end));
                     });
-                } else if (Array.isArray(filters[column.Column_Name])) {
-                    filtered = filters[column.Column_Name]?.length > 0 ? filtered.filter(item => filters[column.Column_Name].includes(item[column.Column_Name].toLowerCase().trim())) : filtered
+                } else if (Array.isArray(filters[column.accessColumnName])) {
+                    filtered = filters[column.accessColumnName]?.length > 0 ? filtered.filter(item => filters[column.accessColumnName].includes(item[column.accessColumnName].toLowerCase().trim())) : filtered
                 }
             }
         }
@@ -288,7 +288,7 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
     };
 
     const renderFilter = (column) => {
-        const { Column_Name, Column_Data_Type } = column;
+        const { accessColumnName, Column_Name, Column_Data_Type } = column;
         if (Column_Data_Type === 'number') {
             return (
                 <div className='d-flex justify-content-between px-2'>
@@ -296,15 +296,15 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
                         placeholder="Min"
                         type="number"
                         className="bg-light border-0 m-1 p-1 w-50"
-                        value={filters[Column_Name]?.min ?? ''}
-                        onChange={(e) => handleFilterChange(Column_Name, { type: 'range', ...filters[Column_Name], min: e.target.value ? parseFloat(e.target.value) : undefined })}
+                        value={filters[accessColumnName]?.min ?? ''}
+                        onChange={(e) => handleFilterChange(accessColumnName, { type: 'range', ...filters[accessColumnName], min: e.target.value ? parseFloat(e.target.value) : undefined })}
                     />
                     <input
                         placeholder="Max"
                         type="number"
                         className="bg-light border-0 m-1 p-1 w-50"
-                        value={filters[Column_Name]?.max ?? ''}
-                        onChange={(e) => handleFilterChange(Column_Name, { type: 'range', ...filters[Column_Name], max: e.target.value ? parseFloat(e.target.value) : undefined })}
+                        value={filters[accessColumnName]?.max ?? ''}
+                        onChange={(e) => handleFilterChange(accessColumnName, { type: 'range', ...filters[accessColumnName], max: e.target.value ? parseFloat(e.target.value) : undefined })}
                     />
                 </div>
             );
@@ -315,29 +315,29 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
                         placeholder="Start Date"
                         type="date"
                         className="bg-light border-0 m-1 p-1 w-50"
-                        value={filters[Column_Name]?.value?.start ?? ''}
-                        onChange={(e) => handleFilterChange(Column_Name, { type: 'date', value: { ...filters[Column_Name]?.value, start: e.target.value || undefined } })}
+                        value={filters[accessColumnName]?.value?.start ?? ''}
+                        onChange={(e) => handleFilterChange(accessColumnName, { type: 'date', value: { ...filters[accessColumnName]?.value, start: e.target.value || undefined } })}
                     />
                     <input
                         placeholder="End Date"
                         type="date"
                         className="bg-light border-0 m-1 p-1 w-50"
-                        value={filters[Column_Name]?.value?.end ?? ''}
-                        onChange={(e) => handleFilterChange(Column_Name, { type: 'date', value: { ...filters[Column_Name]?.value, end: e.target.value || undefined } })}
+                        value={filters[accessColumnName]?.value?.end ?? ''}
+                        onChange={(e) => handleFilterChange(accessColumnName, { type: 'date', value: { ...filters[accessColumnName]?.value, end: e.target.value || undefined } })}
                     />
                 </div>
             );
         } else if (Column_Data_Type === 'string') {
-            const distinctValues = [...new Set(dataArray.map(item => item[Column_Name]?.toLowerCase()?.trim()))].sort();
+            const distinctValues = [...new Set(dataArray.map(item => item[accessColumnName]?.toLowerCase()?.trim()))].sort();
             return (
                 <Autocomplete
                     multiple
-                    id={`${Column_Name}-filter`}
+                    id={`${accessColumnName}-filter`}
                     options={distinctValues}
                     disableCloseOnSelect
                     getOptionLabel={option => option}
-                    value={filters[Column_Name] || []}
-                    onChange={(event, newValue) => handleFilterChange(Column_Name, newValue)}
+                    value={filters[accessColumnName] || []}
+                    onChange={(event, newValue) => handleFilterChange(accessColumnName, newValue)}
                     renderOption={(props, option, { selected }) => (
                         <li {...props}>
                             <Checkbox
@@ -353,7 +353,7 @@ const DynamicMuiTable = ({ reportId, company, queryFilters }) => {
                     renderInput={(params) => (
                         <TextField
                             {...params}
-                            label={Column_Name}
+                            label={Column_Name?.replace(/_/g, ' ')}
                             placeholder={`Select ${Column_Name?.replace(/_/g, ' ')}`}
                         />
                     )}
