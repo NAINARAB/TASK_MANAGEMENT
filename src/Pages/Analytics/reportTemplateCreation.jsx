@@ -445,9 +445,10 @@ const ReportTemplateCreation = () => {
                                                                             key={tableInd}
                                                                             value={table?.Table_Id}
                                                                             disabled={
-                                                                                inputValues?.tableJoins?.find(fil =>
-                                                                                    isEqualNumber(fil.Join_First_Table_Id, table?.Table_Id)
-                                                                                )
+                                                                                isEqualNumber(inputs?.Join_First_Table_Id, table?.Table_Id)
+                                                                                // inputValues?.tableJoins?.find(fil =>
+                                                                                //     isEqualNumber(fil.Join_First_Table_Id, table?.Table_Id)
+                                                                                // )
                                                                             }
                                                                         >
                                                                             {table?.AliasName}
