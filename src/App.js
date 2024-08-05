@@ -11,7 +11,7 @@ import { ToastContainer } from 'react-toastify';
 
 
 import CompanyInfo from "./Pages/Masters/CompanyInfo"
-import Users from "./Pages/Masters/Users";
+import Users from "./Pages/Masters/newUsers";
 import BranchInfo from "./Pages/Masters/BranchInfo";
 import ProjectList from "./Pages/Masters/ProjectList";
 import UserType from "./Pages/Masters/UserType";
